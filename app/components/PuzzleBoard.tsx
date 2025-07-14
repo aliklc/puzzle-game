@@ -4,10 +4,20 @@ import Cell from './Cell'
 import { Fruit, fruits } from '../lib/constants'
 import { samplePuzzle } from '../lib/puzzles'
 import { checkPuzzleComplete,isInvalidCell } from '../lib/GameLogic'
+import GameControls from './GameControls'
+
+
+interface Move {
+    row: number;
+    col: number;
+    previousValue: Fruit;
+    newValue: Fruit;
+}
 
 export default function PuzzleBoard() {
     const [board, setBoard] = useState<Fruit[][]>(samplePuzzle.initialBoard);
     const [isComplete, setIsComplete] = useState(false);
+    const [moveHistory, setMoveHistory] = useState<Move[]>([]);
     const initialPuzzleState = samplePuzzle.initialBoard;
     const constraints = samplePuzzle.constraints;
 
@@ -21,19 +31,50 @@ export default function PuzzleBoard() {
             const current = newBoard[row][col];
             const currentIndex = fruits.indexOf(current);
             const nextIndex = (currentIndex + 1) % fruits.length;
-            newBoard[row][col] = fruits[nextIndex];
+            const newValue = fruits[nextIndex];
+
+            const move: Move = {
+                row,
+                col,
+                previousValue: current,
+                newValue: newValue
+            };
+
+            setMoveHistory(prevHistory => [...prevHistory, move]);
+            
+            newBoard[row][col] = newValue;
             return newBoard;
         });
+    }
+
+    const handleUndo = () => {
+        if (moveHistory.length === 0) return;
+
+        const lastMove = moveHistory[moveHistory.length - 1];
+        
+        setBoard(prev => {
+            const newBoard = prev.map(r => [...r]);
+            newBoard[lastMove.row][lastMove.col] = lastMove.previousValue;
+            return newBoard;
+        });
+
+        setMoveHistory(prev => prev.slice(0, -1));
     }
 
     // Board değiştiğinde tamamlanma kontrolü yap
     useEffect(() => {
         const complete = checkPuzzleComplete(board,constraints);
         setIsComplete(complete);
-    }, [board]);
+    }, [board, constraints]);
 
     return (
         <div className="w-fit mx-auto mt-10">
+
+            <GameControls
+                onUndo={handleUndo}
+                canUndo={moveHistory.length > 0}
+            />
+
             {/* Tamamlanma mesajı */}
             {isComplete && (
                 <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded-lg text-center">

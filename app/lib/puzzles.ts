@@ -28,21 +28,3 @@ export const samplePuzzle: Puzzle = {
     { type: 'equal', cell1: { row: 4, col: 3 }, cell2: { row: 4, col: 4 } },
   ],
 };
-
-// Alternatif olarak daha basit bir puzzle:
-export const easyPuzzle: Puzzle = {
-  initialBoard: [
-    [null, null, null, null, null, null],
-    [null, 'lemon', null, 'blueberry', null, null],
-    [null, null, null, null, null, null],
-    [null, null, 'blueberry', null, null, null],
-    [null, null, null, null, 'lemon', null],
-    [null, null, null, null, null, null],
-  ],
-  constraints: [
-    // = işareti: (1,0) ve (2,0) aynı olmalı
-    { type: 'equal', cell1: { row: 1, col: 0 }, cell2: { row: 2, col: 0 } },
-    // × işareti: (0,2) ve (1,2) farklı olmalı
-    { type: 'different', cell1: { row: 0, col: 2 }, cell2: { row: 1, col: 2 } },
-  ],
-};
