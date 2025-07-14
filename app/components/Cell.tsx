@@ -13,8 +13,6 @@ export default function Cell({ fruit, onClick, invalid, locked }: CellProps) {
     // DEĞİŞİKLİK: Arka plan rengini ve imleci 'locked' durumuna göre ayarlıyoruz.
     const bgColor = invalid
         ? 'bg-red-500'
-        : locked
-        ? 'bg-gray-300' // Kilitli hücreler için farklı bir renk
         : 'bg-gray-100 hover:bg-gray-200'; // Normal, üzerine gelince değişen renk
 
     const cursor = locked ? 'cursor-not-allowed' : 'cursor-pointer';

@@ -22,13 +22,9 @@ export const samplePuzzle: Puzzle = {
     [null, null, null, 'lemon', 'lemon', null],
   ],
   constraints: [
-    // = işareti: (0,1) ve (0,2) aynı olmalı
     { type: 'different', cell1: { row: 0, col: 1 }, cell2: { row: 0, col: 2 } },
-    // × işareti: (1,1) ve (2,1) farklı olmalı
     { type: 'different', cell1: { row: 1, col: 1 }, cell2: { row: 1, col: 2 } },
-    // = işareti: (3,1) ve (4,1) aynı olmalı
     { type: 'different', cell1: { row: 3, col: 4 }, cell2: { row: 3, col: 5 } },
-    // × işareti: (4,2) ve (4,3) farklı olmalı
     { type: 'equal', cell1: { row: 4, col: 3 }, cell2: { row: 4, col: 4 } },
   ],
 };
