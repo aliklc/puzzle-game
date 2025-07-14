@@ -3,28 +3,34 @@ import React from 'react'
 import { Fruit } from '../lib/constants'
 
 interface CellProps {
-  fruit: Fruit
-  onClick: () => void
-  invalid?: boolean
+    fruit: Fruit
+    onClick: () => void
+    invalid?: boolean
+    locked?: boolean // YENİ: Kilitli hücreler için prop eklendi.
 }
 
-export default function Cell({ fruit, onClick, invalid }: CellProps) {
-  const bgColor = invalid
-    ? 'bg-red-500'
-    : 'bg-gray-100'
+export default function Cell({ fruit, onClick, invalid, locked }: CellProps) {
+    // DEĞİŞİKLİK: Arka plan rengini ve imleci 'locked' durumuna göre ayarlıyoruz.
+    const bgColor = invalid
+        ? 'bg-red-500'
+        : locked
+        ? 'bg-gray-300' // Kilitli hücreler için farklı bir renk
+        : 'bg-gray-100 hover:bg-gray-200'; // Normal, üzerine gelince değişen renk
 
-  const emoji =
-    fruit === 'lemon' ? '🍋' :
-    fruit === 'blueberry' ? '🫐' :
-    ''
+    const cursor = locked ? 'cursor-not-allowed' : 'cursor-pointer';
 
-  return (
-    <div
-      onClick={onClick}
-      className={`w-16 h-16 border border-gray-300 flex items-center justify-center cursor-pointer ${bgColor}`}
-    >
-      {emoji}
-    </div>
-  )
+    const emoji =
+        fruit === 'lemon' ? '🍋' :
+        fruit === 'blueberry' ? '🫐' :
+        '';
+
+    return (
+        <div
+            onClick={onClick}
+            // DEĞİŞİKLİK: className'e yeni stilleri ekliyoruz.
+            className={`w-16 h-16 border border-gray-400 flex items-center justify-center text-3xl ${bgColor} ${cursor}`}
+        >
+            {emoji}
+        </div>
+    )
 }
-
