@@ -1,45 +1,33 @@
 'use client'
-
-import { useState } from 'react'
-
-type CellValue = 'blueberry' | 'lemon' | null
-
-type Cell = {
-  row: number
-  col: number
-  value: CellValue
-}
+import React, { useState } from 'react'
+import Cell from './Cell'
+import { Fruit, fruits } from '../lib/constants'
 
 export default function PuzzleBoard() {
-const [grid, setGrid] = useState<Cell[][]>(
-  Array.from({ length: 6 }, (_, row) =>
-    Array.from({ length: 6 }, (_, col) => ({ row, col, value: null }))
+  const [board, setBoard] = useState<Fruit[][]>(
+    Array.from({ length: 6 }, () => Array(6).fill(null))
   )
-  
-)
- 
-  const toggleCellValue = (row: number, col: number) => {
-    setGrid(prevGrid => {
-      const newGrid = prevGrid.map(r => r.map(c => ({ ...c })))
-      const cell = newGrid[row][col]
-      if (cell.value === null) cell.value = 'blueberry'
-      else if (cell.value === 'blueberry') cell.value = 'lemon'
-      else cell.value = null
-      return newGrid
+
+  const toggleFruit = (row: number, col: number) => {
+    setBoard(prev => {
+      const newBoard = prev.map(r => [...r])
+      const current = newBoard[row][col]
+      const currentIndex = fruits.indexOf(current)
+      const nextIndex = (currentIndex + 1) % fruits.length
+      newBoard[row][col] = fruits[nextIndex]
+      return newBoard
     })
   }
 
   return (
     <div className="grid grid-cols-6 gap-1 w-fit mx-auto mt-10">
-      {grid.flatMap((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <div
+      {board.flatMap((row, rowIndex) =>
+        row.map((fruit, colIndex) => (
+          <Cell
             key={`${rowIndex}-${colIndex}`}
-            className="w-16 h-16 bg-gray-100 border border-gray-300 flex items-center justify-center text-2xl cursor-pointer select-none"
-            onClick={() => toggleCellValue(rowIndex, colIndex)}
-          >
-            {cell.value === 'blueberry' ? '🫐' : cell.value === 'lemon' ? '🍋' : ''}
-          </div>
+            fruit={fruit}
+            onClick={() => toggleFruit(rowIndex, colIndex)}
+          />
         ))
       )}
     </div>
