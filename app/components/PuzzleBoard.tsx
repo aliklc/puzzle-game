@@ -120,7 +120,7 @@ export default function PuzzleBoard() {
 
 
     return (
-        <div className="w-fit mx-auto mt-5 mb-20">
+        <div className="w-fit mx-auto mt-5 mb-20 rounded-2xl bg-blue-100 p-4">
 
             <div className="text-center text-gray-700 text-lg font-semibold mb-5">
                 Süre: {formattedTime}
