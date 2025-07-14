@@ -1,11 +1,12 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Cell from './Cell'
 import { Fruit, fruits } from '../lib/constants'
 import { samplePuzzle } from '../lib/puzzles'
 
 export default function PuzzleBoard() {
     const [board, setBoard] = useState<Fruit[][]>(samplePuzzle.initialBoard);
+    const [isComplete, setIsComplete] = useState(false);
     const initialPuzzleState = samplePuzzle.initialBoard;
     const constraints = samplePuzzle.constraints;
 
@@ -48,7 +49,7 @@ export default function PuzzleBoard() {
         const horizontalCount = 1 + countInDirection(0, -1) + countInDirection(0, 1);
         const verticalCount = 1 + countInDirection(-1, 0) + countInDirection(1, 0);
 
-        if (horizontalCount >= 3 || verticalCount >= 3) return true;
+        if (horizontalCount > 2 || verticalCount > 2) return true;
     
         // Satır/sütun maksimum sayı kontrolü
         const rowCount = board[row].filter(f => f === fruit).length;
@@ -75,10 +76,73 @@ export default function PuzzleBoard() {
         return false;
     }
 
+    const checkPuzzleComplete = (board: Fruit[][]): boolean => {
+        // 1. Tüm hücreler dolu mu?
+        for (let row = 0; row < 6; row++) {
+            for (let col = 0; col < 6; col++) {
+                if (board[row][col] === null) {
+                    return false;
+                }
+            }
+        }
 
+        // 2. Hiçbir hücre invalid mi?
+        for (let row = 0; row < 6; row++) {
+            for (let col = 0; col < 6; col++) {
+                if (isInvalidCell(board, row, col)) {
+                    return false;
+                }
+            }
+        }
+
+        // 3. Her satır ve sütunda her meyve türünden eşit sayıda var mı?
+        for (let row = 0; row < 6; row++) {
+            const lemonCount = board[row].filter(f => f === 'lemon').length;
+            const blueberryCount = board[row].filter(f => f === 'blueberry').length;
+            if (lemonCount !== 3 || blueberryCount !== 3) {
+                return false;
+            }
+        }
+
+        for (let col = 0; col < 6; col++) {
+            const lemonCount = board.map(r => r[col]).filter(f => f === 'lemon').length;
+            const blueberryCount = board.map(r => r[col]).filter(f => f === 'blueberry').length;
+            if (lemonCount !== 3 || blueberryCount !== 3) {
+                return false;
+            }
+        }
+
+        // 4. Tüm constraint'ler sağlanıyor mu?
+        for (const constraint of constraints) {
+            const { type, cell1, cell2 } = constraint;
+            const fruit1 = board[cell1.row][cell1.col];
+            const fruit2 = board[cell2.row][cell2.col];
+            
+            if (fruit1 && fruit2) {
+                if (type === 'equal' && fruit1 !== fruit2) return false;
+                if (type === 'different' && fruit1 === fruit2) return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Board değiştiğinde tamamlanma kontrolü yap
+    useEffect(() => {
+        const complete = checkPuzzleComplete(board);
+        setIsComplete(complete);
+    }, [board]);
 
     return (
         <div className="w-fit mx-auto mt-10">
+            {/* Tamamlanma mesajı */}
+            {isComplete && (
+                <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded-lg text-center">
+                    <h2 className="text-2xl font-bold text-green-800">🎉 Tebrikler! 🎉</h2>
+                    <p className="text-green-700">Bulmacayı başarıyla tamamladınız!</p>
+                </div>
+            )}
+
             <div className="relative">
                 {/* Ana grid - hücreler */}
                 <div className="grid grid-cols-6 gap-2 p-4">
