@@ -23,7 +23,6 @@ export default function PuzzleBoard() {
         const fruit = board[row][col]
         if (!fruit) return false
 
-        // ✅ 1. Kural: 3 ardışık aynı meyve (yatay-dikey)
         const countInDirection = (dr: number, dc: number) => {
             let r = row + dr
             let c = col + dc
@@ -44,6 +43,12 @@ export default function PuzzleBoard() {
         const verticalCount = 1 + countInDirection(-1, 0) + countInDirection(1, 0)
 
         if (horizontalCount >= 3 || verticalCount >= 3) return true
+    
+        const rowCount = board[row].filter(f => f === fruit).length
+        const colCount = board.map(r => r[col]).filter(f => f === fruit).length
+
+        const maxPerType = board.length / 2 // 6x6 için 3
+        if (rowCount > maxPerType || colCount > maxPerType) return true
 
         return false
     }
