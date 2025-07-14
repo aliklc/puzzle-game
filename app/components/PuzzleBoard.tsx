@@ -4,42 +4,48 @@ import Cell from './Cell'
 import { Fruit, fruits } from '../lib/constants'
 
 export default function PuzzleBoard() {
-  const [board, setBoard] = useState<Fruit[][]>(
-    Array.from({ length: 6 }, () => Array(6).fill(null))
-  )
+    const [board, setBoard] = useState<Fruit[][]>(
+        Array.from({ length: 6 }, () => Array(6).fill(null))
+    )
 
-  const toggleFruit = (row: number, col: number) => {
-    setBoard(prev => {
-      const newBoard = prev.map(r => [...r])
-      const current = newBoard[row][col]
-      const currentIndex = fruits.indexOf(current)
-      const nextIndex = (currentIndex + 1) % fruits.length
-      newBoard[row][col] = fruits[nextIndex]
-      return newBoard
-    })
-  }
+    const toggleFruit = (row: number, col: number) => {
+        setBoard(prev => {
+        const newBoard = prev.map(r => [...r])
+        const current = newBoard[row][col]
+        const currentIndex = fruits.indexOf(current)
+        const nextIndex = (currentIndex + 1) % fruits.length
+        newBoard[row][col] = fruits[nextIndex]
+        return newBoard
+        })
+    }
 
     const isInvalidCell = (board: Fruit[][], row: number, col: number): boolean => {
-    const fruit = board[row][col]
-    if (!fruit) return false
+        const fruit = board[row][col]
+        if (!fruit) return false
 
-    // YATAY kontrol
-    let horizontal = 1
-    if (col > 0 && board[row][col - 1] === fruit) horizontal++
-    if (col > 1 && board[row][col - 2] === fruit && board[row][col - 1] === fruit) horizontal = 3
-    if (col < 5 && board[row][col + 1] === fruit) horizontal++
-    if (col < 4 && board[row][col + 1] === fruit && board[row][col + 2] === fruit) horizontal = 3
-    if (horizontal >= 3) return true
+        // ✅ 1. Kural: 3 ardışık aynı meyve (yatay-dikey)
+        const countInDirection = (dr: number, dc: number) => {
+            let r = row + dr
+            let c = col + dc
+            let count = 0
+            while (
+            r >= 0 && r < 6 &&
+            c >= 0 && c < 6 &&
+            board[r][c] === fruit
+            ) {
+            count++
+            r += dr
+            c += dc
+            }
+            return count
+        }
 
-    // DİKEY kontrol
-    let vertical = 1
-    if (row > 0 && board[row - 1][col] === fruit) vertical++
-    if (row > 1 && board[row - 2][col] === fruit && board[row - 1][col] === fruit) vertical = 3
-    if (row < 5 && board[row + 1][col] === fruit) vertical++
-    if (row < 4 && board[row + 1][col] === fruit && board[row + 2][col] === fruit) vertical = 3
-    if (vertical >= 3) return true
+        const horizontalCount = 1 + countInDirection(0, -1) + countInDirection(0, 1)
+        const verticalCount = 1 + countInDirection(-1, 0) + countInDirection(1, 0)
 
-    return false
+        if (horizontalCount >= 3 || verticalCount >= 3) return true
+
+        return false
     }
 
   return (
