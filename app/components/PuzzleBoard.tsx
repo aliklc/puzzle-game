@@ -18,6 +18,8 @@ export default function PuzzleBoard() {
     const [board, setBoard] = useState<Fruit[][]>(samplePuzzle.initialBoard);
     const [isComplete, setIsComplete] = useState(false);
     const [moveHistory, setMoveHistory] = useState<Move[]>([]);
+    const [secondsElapsed, setSecondsElapsed] = useState(0);
+    const [timerActive, setTimerActive] = useState(false);
     const initialPuzzleState = samplePuzzle.initialBoard;
     const constraints = samplePuzzle.constraints;
 
@@ -25,6 +27,7 @@ export default function PuzzleBoard() {
         if (initialPuzzleState[row][col] !== null) {
             return;
         }
+        if (!timerActive) setTimerActive(true);
 
         setBoard(prev => {
             const newBoard = prev.map(r => [...r]);
@@ -61,25 +64,76 @@ export default function PuzzleBoard() {
         setMoveHistory(prev => prev.slice(0, -1));
     }
 
+    const handleClear = () => {
+        // Sadece kullanıcının yerleştirdiği meyveleri temizle
+        setBoard(prev => {
+            const newBoard = prev.map(r => [...r]);
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 6; col++) {
+                    if (initialPuzzleState[row][col] === null) {
+                        newBoard[row][col] = null;
+                    }
+                }
+            }
+            return newBoard;
+        });
+        setMoveHistory([]);
+        setSecondsElapsed(0);
+        setTimerActive(false);
+
+    }
+
+    const formatTime = (totalSeconds: number) => {
+        const minutes = Math.floor(totalSeconds / 60)
+            .toString()
+            .padStart(2, '0')
+        const seconds = (totalSeconds % 60).toString().padStart(2, '0')
+        return `${minutes}:${seconds}`
+    }
+
+    const formattedTime = formatTime(secondsElapsed)
+
+
     // Board değiştiğinde tamamlanma kontrolü yap
     useEffect(() => {
-        const complete = checkPuzzleComplete(board,constraints);
+        const complete = checkPuzzleComplete(board, constraints);
         setIsComplete(complete);
+        if (complete) {
+            setTimerActive(false); // süreyi durdur
+        }
     }, [board, constraints]);
 
-    return (
-        <div className="w-fit mx-auto mt-10">
 
-            <GameControls
-                onUndo={handleUndo}
-                canUndo={moveHistory.length > 0}
-            />
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+
+        if (timerActive) {
+            timer = setInterval(() => {
+                setSecondsElapsed(prev => prev + 1);
+            }, 1000);
+        }
+
+        return () => {
+            clearInterval(timer);
+        };
+    }, [timerActive]);
+
+
+    return (
+        <div className="w-fit mx-auto mt-5 mb-20">
+
+            <div className="text-center text-gray-700 text-lg font-semibold mb-5">
+                Süre: {formattedTime}
+            </div>
 
             {/* Tamamlanma mesajı */}
             {isComplete && (
                 <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded-lg text-center">
                     <h2 className="text-2xl font-bold text-green-800">🎉 Tebrikler! 🎉</h2>
-                    <p className="text-green-700">Bulmacayı başarıyla tamamladınız!</p>
+                    <p className="text-green-700">
+                        Bulmacayı başarıyla tamamladınız! <br />
+                        Süreniz: <strong>{formattedTime}</strong>
+                    </p>
                 </div>
             )}
 
@@ -102,6 +156,11 @@ export default function PuzzleBoard() {
                         })
                     )}
                 </div>
+                <GameControls
+                    onUndo={handleUndo}
+                    onClear={handleClear}
+                    canUndo={moveHistory.length > 0}
+                />
                 
                 {/* Constraint'ler için overlay */}
                 <div className="absolute inset-0 pointer-events-none">
