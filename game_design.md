@@ -8,7 +8,7 @@
 - Mantık Bulmaca Oyunu
 - Izgara Tabanlı
 
----
+-------------------------------------------------------------------------------------
 
 ## 2. Rekabet ve Pazar Analizi
 
@@ -31,6 +31,7 @@
 - Sosyal medya paylaşımı + günlük içerik ile bağlılık  
 - Tahmin gerektirmeyen, adil bulmacalar sunma  
 
+-------------------------------------------------------------------------------------
 
 ## 3. Oyun Konsepti ve Teması
 
@@ -45,12 +46,12 @@
 - **Semboller:** Ayırt edilebilir, tatlı ve davetkâr tasarımlar
 - **Tipografi:** Net, modern, okunabilir
 
----
+-------------------------------------------------------------------------------------
 
 ## 4. Oynanış ve Mekanikler
 
 ### 4.1. Çekirdek Oynanış Döngüsü
-1. Bulmaca seçimi/oluşturma
+1. Bulmaca seçimi
 2. Izgara etkileşimi
 3. Kural kontrolü & geri bildirim
 4. Mantıksal çıkarım ve doldurma
@@ -69,55 +70,92 @@
 - Alternatif: Sembol seç & hücreye yerleştir
 - Geniş dokunma alanları
 
----
+-------------------------------------------------------------------------------------
 
-## 5. Bulmaca Tasarımı ve Üretimi
+### 5. Bulmaca Oluşturma Algoritması ve Zorluk
 
-### 5.1. Izgara Boyutları
-- Küçük: 6x6 (Kolay)
-- Orta: 8x8 (Orta)
-- Büyük: 10x10 (Zor)
 
-### 5.2. Bulmaca Oluşturma Algoritması
-**1.Tercih**
-1. Geri İzleme (Backtracking) tabanlı bir algoritma kullanılacaktır. Algoritma, önce tüm kurallara uyan (ikili kural, satır/sütun dengesi) tam ve geçerli bir çözüm ızgarası oluşturacaktır
-2. Ardından, bu tam çözüm ızgarasına stratejik olarak "=" ve "×" bağlantıları eklenecektir. Bu bağlantıların yerleşimi, bulmacanın çözüm yolunu ve zorluğunu doğrudan etkileyecektir
-3. Son olarak, tam çözümden kademe kademe hücreler boşaltılarak (ipuçları kaldırılarak) bulmaca oluşturulacaktır.
+#### 5.1. Bulmaca Oluşturma Mantığı
 
-**2.Tercih**
-1. Geriye doğru üretim (backward construction) uygulanır:  
-   - Kurallara uygun tam bir çözüm oluşturulur  
-   - "=" ve "×" işaretleri stratejik yerleştirilir  
-   - Hücreler kademeli olarak boşaltılır  
-2. Her boşaltma adımında tek çözüm kontrol edilir  
-3. Eğer çözüm birden fazlaysa yeniden oluşturulur
+Her bulmaca, **tahmin gerektirmeyen ve tek çözümlü** olacak şekilde otomatik olarak oluşturulur. Bu üretim süreci, iki temel algoritmayı birlikte kullanır:
 
-### 5.3. Zorluk ve Ölçeklendirme
+- **Backtracking (geri izleme)**
+- **Backward Construction (geriye doğru üretim)**
+
+
+#### 🔧 Aşamalar:
+
+#### 1. Tam Çözüm Üretimi (Backtracking)
+- Rastgele değerlerle ama tamamen kurallara uygun olacak şekilde dolu bir tablo oluşturulur.
+- Kullanılan kurallar:
+  - **Üçlü tekrar yasağı:** Satır/sütun içinde üç aynı sembol (yaban mersini veya limon) yan yana gelemez
+  - **Denge kuralı:** Her satır ve sütunda eşit sayıda her iki sembol bulunmalı
+  - **Satır/sütun eşsizliği:** Aynı satır veya sütundan birden fazla bulunamaz
+- Bu tablo algoritmik olarak çözülmüştür, oyuncunun göremeyeceği **tam çözüm**dür.
+
+#### 2. Kullanıcıya Sunulacak Puzzle Üretimi (Backward Construction)
+- Üretilen tam çözüme dayalı olarak:
+  - Belirli hücreler rastgele boşaltılır
+  - Çözümden alınan bilgilere göre bazı `=` (eşit) ve `×` (zıt) bağlantıları yerleştirilir
+- Bu adımda dikkat edilenler:
+  - Boşluklar ve işaretler dengeli yerleştirilir
+  - Zorluk seviyesi; boşluk sayısı, ipucu yoğunluğu ve bağlantıların konumuna göre belirlenir
+
+#### 3. Tekil Çözüm Kontrolü (Backtracking ile)
+- Oluşan puzzle, backtracking ile tekrar çözülerek **çözüm sayısı hesaplanır**
+- Eğer:
+  - 🔹 **Sadece 1 çözüm** varsa → bulmaca kabul edilir
+  - 🔸 **Birden fazla çözüm** varsa → yeni bir tam çözüm oluşturularak süreç başa döner
+
+Bu sayede oyuncular yalnızca **mantıkla çözülebilir ve tek bir doğru çözüme sahip** adil bulmacalarla karşılaşır.
+
+#### 5.2. Zorluk ve Ölçeklendirme
 - Izgara boyutu
 - Başlangıç ipuçları
 - Çıkarım karmaşıklığı
 - "=" ve "×" bağlantı yoğunluğu
 - Seviyeler: Kolay, Orta, Zor
 
-### 5.4. Tekil Çözüm Garantisi
-Her bulmaca için çözücü algoritma kullanılarak:
-- Her bulmacanın tek bir doğru çözümü olduğundan ve asla tahmin gerektirmediğinden emin olmak, oyunun temel prensibidir.
-- Bulmacalar, entegre bir algoritma ile mantıksal olarak çözülebilir şekilde oluşturulacak; birden fazla çözüm gerektirenler geçersiz sayılacaktır. Bu sayede oyunculara her zaman adil bulmacalar sunulacaktır.
-
----
+-------------------------------------------------------------------------------------
 
 ## 6. UI & UX Tasarımı
 
-### 6.1. Ana Ekran ve Menüler
-- Minimalist tasarım
-- Menü: Yeni Bulmaca, Devam Et, Ayarlar, İstatistikler, Mağaza
+### 6.1. Ana Ekran (Main Menu)
 
-### 6.2. Oynanış Arayüzü
-- Net çizgili ızgara
-- Sembol paleti veya dokunarak değiştirme
-- Yardımcı düğmeler: Geri Al, İpucu, Kontrol Et, Menü
-- Geçirilen süre
-- Açılır kapanır "Hataları Göster" modu
+**Amaç:** Kullanıcıyı yönlendirmek, erişimi hızlı kılmak ve minimal bir görünümle profesyonellik sunmak.
+
+**Bileşenler:**
+- 🎮 **Başla**: Son bulmacadan devam et
+- ⚙️ **Ayarlar**: Tema, dil, ses gibi tercihler
+- 📊 **İstatistikler**: Başarı yüzdesi, ortalama süre, kazanılan ödüller
+- 🛒 **Mağaza**: Kozmetik içerikler, ipuçları, premium seçenekler
+- 📅 **Günlük Mücadele**: Güne özel tek seferlik bulmaca
+- 🏆 **Liderlik Tabloları**
+
+
+### 6.2. Oynanış Ekranı (Puzzle UI)
+
++-----------------------------+
+| 🫐 Tangly 8x8 🟡 | ⏱   💡
+|-----------------------------|
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+| ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ ⬜ |
+|                             |
+| ⭕          🔁         ☰   |   
++-----------------------------+
+
+**Simge Butonları:**
+- 🔁 Yeniden başla
+- 💡 İpucu al (sınırlı / reklam karşılığı)
+- ⏱ Zamanlayıcı
+- ⭕ Geri al (undo)
+- ☰ Menüye dön
 
 ### 6.3. Görsel Geri Bildirim
 - **Tamamlanma Durumu:** Parlama, yeşil vurgulama, memnuniyet sesi
@@ -126,9 +164,9 @@ Her bulmaca için çözücü algoritma kullanılarak:
 ### 6.4. Ayarlar
 - Tema seçenekleri
 - Dil
-- Renk körü modu & kontrast ayarları
+- Renk körü modu
 
----
+-------------------------------------------------------------------------------------
 
 ## 7. Para Kazanma (Monetization)
 
@@ -147,7 +185,7 @@ Her bulmaca için çözücü algoritma kullanılarak:
 ### 7.3. Abonelik (Potansiyel)
 - Reklamsız deneyim, sınırsız ipucu, tüm kozmetik, özel içerikler için aylık/yıllık plan
 
----
+-------------------------------------------------------------------------------------
 
 ## 8. Etkileşim ve Uzun Ömürlülük
 
@@ -178,3 +216,10 @@ Her bulmaca için çözücü algoritma kullanılarak:
 - Yeni kural varyasyonları
 - Temalı etkinlikler
 - Sınırlı süreli kozmetik
+
+-------------------------------------------------------------------------------------
+
+#### ✨ Gelişmiş Notlar (Opsiyonel)
+- Özgünlük katmak için bazı hücreler özel olarak `"⊛"` (çift anlamlı/kilitli hücre) olarak tanımlanabilir.  
+- Bu hücreler çözümde 0 veya 1 olabilse de, çözüm sonucunu etkilemez.
+- `"⊛"` hücreleri **oyuncu tarafından değiştirilemez**, yalnızca görsel ipucu amacıyla gösterilir ve oynanışa stratejik çeşit katar.
