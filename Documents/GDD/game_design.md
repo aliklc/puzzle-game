@@ -83,9 +83,9 @@ Her bulmaca, **tahmin gerektirmeyen ve tek çözümlü** olacak şekilde otomati
 - **Backward Construction (geriye doğru üretim)**
 
 
-#### 🔧 Aşamalar:
+##### 🔧 Aşamalar:
 
-#### 1. Tam Çözüm Üretimi (Backtracking)
+##### 1. Tam Çözüm Üretimi (Backtracking)
 - Rastgele değerlerle ama tamamen kurallara uygun olacak şekilde dolu bir tablo oluşturulur.
 - Kullanılan kurallar:
   - **Üçlü tekrar yasağı:** Satır/sütun içinde üç aynı sembol (yaban mersini veya limon) yan yana gelemez
@@ -93,7 +93,7 @@ Her bulmaca, **tahmin gerektirmeyen ve tek çözümlü** olacak şekilde otomati
   - **Satır/sütun eşsizliği:** Aynı satır veya sütundan birden fazla bulunamaz
 - Bu tablo algoritmik olarak çözülmüştür, oyuncunun göremeyeceği **tam çözüm**dür.
 
-#### 2. Kullanıcıya Sunulacak Puzzle Üretimi (Backward Construction)
+##### 2. Kullanıcıya Sunulacak Puzzle Üretimi (Backward Construction)
 - Üretilen tam çözüme dayalı olarak:
   - Belirli hücreler rastgele boşaltılır
   - Çözümden alınan bilgilere göre bazı `=` (eşit) ve `×` (zıt) bağlantıları yerleştirilir
@@ -101,15 +101,23 @@ Her bulmaca, **tahmin gerektirmeyen ve tek çözümlü** olacak şekilde otomati
   - Boşluklar ve işaretler dengeli yerleştirilir
   - Zorluk seviyesi; boşluk sayısı, ipucu yoğunluğu ve bağlantıların konumuna göre belirlenir
 
-#### 3. Tekil Çözüm Kontrolü (Backtracking ile)
+##### 3. Tekil Çözüm ve Mantıksal Çözüm Kontrolü (Backtracking ile)
 - Oluşan puzzle, backtracking ile tekrar çözülerek **çözüm sayısı hesaplanır**
 - Eğer:
   - 🔹 **Sadece 1 çözüm** varsa → bulmaca kabul edilir
   - 🔸 **Birden fazla çözüm** varsa → yeni bir tam çözüm oluşturularak süreç başa döner
+  - Aynı zamanda, **logic solver** algoritması ile tahmin kullanmadan mantıksal olarak çözülebilirlik testi yapılır.
+  - Eğer puzzle bu testlerden geçerse kabul edilir, geçemezse boşluklar ve bağlantılar yeniden düzenlenir.
 
 Bu sayede oyuncular yalnızca **mantıkla çözülebilir ve tek bir doğru çözüme sahip** adil bulmacalarla karşılaşır.
 
-#### 5.2. Zorluk ve Ölçeklendirme
+#### 5.2. Api'de Puzzle üretimi 
+
+- Puzzle üretimi, backtracking ve logic solver gibi CPU yoğun algoritmalar içerir.  
+- Bu işlemin sunucu tarafında yapılması, performans ve güvenlik açısından avantaj sağlar.  
+- Kullanıcılar cihazına yük bindirmez, tutarlı ve doğrulanmış puzzle’lar sunulur.  
+
+#### 5.3. Zorluk ve Ölçeklendirme
 - Izgara boyutu
 - Başlangıç ipuçları
 - Çıkarım karmaşıklığı
