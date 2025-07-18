@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { generateFullSolution } from '../lib/generator/generateFullSolution'
+import { maskPuzzle } from '../lib/generator/maskPuzzle'
 import {
 	Select,
 	SelectContent,
@@ -11,12 +12,14 @@ import {
 } from '@/components/ui/select'
 
 export default function GeneratorTab() {
-	const [grid, setGrid] = useState<string[][]>([])
-	const [gridSize, setGridSize] = useState(6)
+	const [puzzle, setPuzzle] = useState<(string | null)[][]>([])
+	const [gridSize, setGridSize] = useState<number>(6)
+	const [blankRatio, setBlankRatio] = useState<number>(0.5)
 
 	function handleGenerate() {
-		const newGrid = generateFullSolution(gridSize)
-		setGrid(newGrid)
+		const solution = generateFullSolution(gridSize)
+		const { puzzle } = maskPuzzle(solution, blankRatio)
+		setPuzzle(puzzle)
 	}
 
 	return (
@@ -24,7 +27,7 @@ export default function GeneratorTab() {
 			<div className="flex items-center space-x-4">
 				<Select
 					value={gridSize.toString()}
-					onValueChange={(value) => setGridSize(Number(value))}
+					onValueChange={(v) => setGridSize(Number(v))}
 				>
 					<SelectTrigger className="w-[120px]">
 						<SelectValue placeholder="Grid Size" />
@@ -36,29 +39,43 @@ export default function GeneratorTab() {
 					</SelectContent>
 				</Select>
 
+				<Select
+					value={blankRatio.toString()}
+					onValueChange={(v) => setBlankRatio(Number(v))}
+				>
+					<SelectTrigger className="w-[120px]">
+						<SelectValue placeholder="Blank Ratio" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="0.3">30%</SelectItem>
+						<SelectItem value="0.5">50%</SelectItem>
+						<SelectItem value="0.7">70%</SelectItem>
+					</SelectContent>
+				</Select>
+
 				<button
 					onClick={handleGenerate}
 					className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
 				>
-					Generate
+					Generate Puzzle
 				</button>
 			</div>
 
-			{grid.length > 0 && (
+			{puzzle.length > 0 && (
 				<div
 					className="grid"
 					style={{
-						gridTemplateColumns: `repeat(${grid.length}, 40px)`,
+						gridTemplateColumns: `repeat(${puzzle.length}, 40px)`,
 						gap: '2px',
 					}}
 				>
-					{grid.map((row, rowIndex) =>
-						row.map((cell, colIndex) => (
+					{puzzle.map((row, r) =>
+						row.map((cell, c) => (
 							<div
-								key={`${rowIndex}-${colIndex}`}
+								key={`${r}-${c}`}
 								className="w-10 h-10 flex items-center justify-center border text-xl font-semibold bg-white"
 							>
-								{cell}
+								{cell ?? ''}
 							</div>
 						))
 					)}
