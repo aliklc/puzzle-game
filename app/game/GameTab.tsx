@@ -1,3 +1,3 @@
 export default function GameTab() {
-	return <div>🫐 Game tab </div>
+	return <div> Game tab </div>
 }
