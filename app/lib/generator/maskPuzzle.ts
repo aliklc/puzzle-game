@@ -32,38 +32,53 @@ export function maskPuzzle(
         blanks++
     }
 
-    // Tüm yatay ve dikey hücre çiftleri için constraint adayı oluştur
-    const possibleConstraints: Constraint[] = []
+    // Sadece en az bir tarafı boş olan constraint'leri oluştur
+    const meaningfulConstraints: Constraint[] = []
+    
     for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
-            const current = solution[r][c]
-
+            // Sağ komşu kontrolü
             if (c < size - 1) {
-                const right = solution[r][c + 1]
-                const type: ConstraintType = current === right ? '=' : '×'
-                possibleConstraints.push({
-                    from: [r, c],
-                    to: [r, c + 1],
-                    type,
-                })
+                const leftIsEmpty = puzzle[r][c] === null
+                const rightIsEmpty = puzzle[r][c + 1] === null
+                
+                // En az bir tarafı boş ise constraint ekle
+                if (leftIsEmpty || rightIsEmpty) {
+                    const current = solution[r][c]
+                    const right = solution[r][c + 1]
+                    const type: ConstraintType = current === right ? '=' : '×'
+                    meaningfulConstraints.push({
+                        from: [r, c],
+                        to: [r, c + 1],
+                        type,
+                    })
+                }
             }
 
+            // Alt komşu kontrolü
             if (r < size - 1) {
-                const down = solution[r + 1][c]
-                const type: ConstraintType = current === down ? '=' : '×'
-                possibleConstraints.push({
-                    from: [r, c],
-                    to: [r + 1, c],
-                    type,
-                })
+                const topIsEmpty = puzzle[r][c] === null
+                const bottomIsEmpty = puzzle[r + 1][c] === null
+                
+                // En az bir tarafı boş ise constraint ekle
+                if (topIsEmpty || bottomIsEmpty) {
+                    const current = solution[r][c]
+                    const down = solution[r + 1][c]
+                    const type: ConstraintType = current === down ? '=' : '×'
+                    meaningfulConstraints.push({
+                        from: [r, c],
+                        to: [r + 1, c],
+                        type,
+                    })
+                }
             }
         }
     }
 
-    shuffleArray(possibleConstraints)
-
-    const maxConstraints = Math.floor(possibleConstraints.length * constraintRatio)
-    const constraints = possibleConstraints.slice(0, maxConstraints)
+    // Constraint'leri karıştır ve belirli bir oranını seç
+    shuffleArray(meaningfulConstraints)
+    const maxConstraints = Math.floor(meaningfulConstraints.length * constraintRatio)
+    const constraints = meaningfulConstraints.slice(0, maxConstraints)
 
     return { puzzle, constraints }
 }

@@ -14,8 +14,8 @@ export default function BlankRatioSelector({ value, onChange }: BlankRatioSelect
                 <SelectValue placeholder="Blank Ratio" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="0.3">30%</SelectItem>
                 <SelectItem value="0.5">50%</SelectItem>
+                <SelectItem value="0.6">60%</SelectItem>
                 <SelectItem value="0.7">70%</SelectItem>
             </SelectContent>
         </Select>

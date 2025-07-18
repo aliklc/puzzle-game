@@ -41,20 +41,6 @@ export function isValidPlacement(
 	)
 		return false
 
-	// 3. Eşsizlik (satır ve sütun karşılaştırması sadece doluysa yapılır)
-	for (let i = 0; i < gridSize; i++) {
-		if (
-			i !== row &&
-			board[i].every((_, j) => board[i][j] && board[i][j] === board[row][j])
-		)
-			return false
-
-		if (
-			i !== col &&
-			board.every((_, j) => board[j][i] && board[j][i] === board[j][col])
-		)
-			return false
-	}
 
 	return true
 }

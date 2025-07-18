@@ -24,9 +24,9 @@ export default function ConstraintRatioSelector({
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="0.1">10%</SelectItem>
+                <SelectItem value="0.2">20%</SelectItem>
                 <SelectItem value="0.3">30%</SelectItem>
-                <SelectItem value="0.5">50%</SelectItem>
-                <SelectItem value="0.7">70%</SelectItem>
+                <SelectItem value="0.4">40%</SelectItem>
             </SelectContent>
         </Select>
     )

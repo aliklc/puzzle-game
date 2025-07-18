@@ -1,4 +1,4 @@
-export type Fruit = '🫐' | '🍋'
+export type Fruit = '🫐' | '🍋'|null
 
 export type ConstraintType = '=' | '×'
 
