@@ -10,6 +10,7 @@ import DifficultySelector from './components/DifficultySelector'
 import GenerateButton from './components/GenerateButton'
 import PuzzleGrid from './components/PuzzleGrid'
 import type { Fruit, Constraint } from '../lib/types'
+import { solveLogically } from '../lib/generator/solveLogically'
 
 export default function GeneratorTab() {
 	const [puzzle, setPuzzle] = useState<(Fruit | null)[][]>([])
@@ -20,18 +21,23 @@ export default function GeneratorTab() {
 	// Direkt difficultyConfigs'den değerleri al
 	const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
-    function handleGenerate() {
-        let solution: Fruit[][]
-        let masked: ReturnType<typeof maskPuzzle>
+	function handleGenerate() {
+		let solution: Fruit[][]
+		let masked: ReturnType<typeof maskPuzzle>
+		let logicalSolution: (Fruit | null)[][] | null
 
-        do {
-            solution = generateFullSolution(gridSize)
-            masked = maskPuzzle(solution, blankRatio, constraintRatio)
-        } while (!hasUniqueSolution(masked.puzzle, masked.constraints))
+		do {
+			solution = generateFullSolution(gridSize)
+			masked = maskPuzzle(solution, blankRatio, constraintRatio)
+			logicalSolution = solveLogically(masked.puzzle, masked.constraints)
+		} while (
+			!hasUniqueSolution(masked.puzzle, masked.constraints) ||
+			logicalSolution === null
+		)
 
-        setPuzzle(masked.puzzle)
-        setConstraints(masked.constraints)
-    }
+		setPuzzle(masked.puzzle)
+		setConstraints(masked.constraints)
+	}
 
 	return (
 		<div className="flex flex-col items-center space-y-4">
