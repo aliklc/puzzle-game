@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { generateFullSolution } from '../lib/generator/generateFullSolution'
 import { maskPuzzle } from '../lib/generator/maskPuzzle'
 import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig'
+import { hasUniqueSolution } from '../lib/generator/hasUniqueSolution'
 import SizeSelector from './components/SizeSelector'
 import DifficultySelector from './components/DifficultySelector'
 import GenerateButton from './components/GenerateButton'
@@ -19,12 +20,18 @@ export default function GeneratorTab() {
 	// Direkt difficultyConfigs'den değerleri al
 	const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
-	function handleGenerate() {
-		const solution = generateFullSolution(gridSize)
-		const { puzzle, constraints } = maskPuzzle(solution, blankRatio, constraintRatio)
-		setPuzzle(puzzle)
-		setConstraints(constraints)
-	}
+    function handleGenerate() {
+        let solution: Fruit[][]
+        let masked: ReturnType<typeof maskPuzzle>
+
+        do {
+            solution = generateFullSolution(gridSize)
+            masked = maskPuzzle(solution, blankRatio, constraintRatio)
+        } while (!hasUniqueSolution(masked.puzzle, masked.constraints))
+
+        setPuzzle(masked.puzzle)
+        setConstraints(masked.constraints)
+    }
 
 	return (
 		<div className="flex flex-col items-center space-y-4">
