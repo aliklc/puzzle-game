@@ -9,6 +9,8 @@ import PuzzleGrid from './components/PuzzleGrid'
 import type { Cell, Constraint } from '../lib/types'
 import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
 import SaveButton from './components/SaveButton'
+import PuzzleList from './components/PuzzleList'
+
 
 export default function GeneratorTab() {
 	// puzzle ve diğer state'lerde Fruit | null yerine Cell kullanalım
@@ -32,7 +34,6 @@ export default function GeneratorTab() {
 
 		const id = Date.now()
 
-		// Parça parça logla
 		console.log(`\n Puzzle ID: ${id}\n`)
 		console.log(` Grid Size: ${gridSize}x${gridSize}`)
 		console.log(`Difficulty: ${difficulty.toUpperCase()}\n`)
@@ -47,7 +48,14 @@ export default function GeneratorTab() {
 
 	return (
 		<div className="flex flex-col items-center space-y-4">
-			
+
+			<PuzzleList
+				onSelect={(puzzle, constraints, solution) => {
+					setPuzzle(puzzle)
+					setConstraints(constraints)
+					setSolution(solution)
+				}}
+			/>
 			<div className="flex items-center space-x-4">
 				<SizeSelector value={gridSize} onChange={setGridSize} />
 				<DifficultySelector
