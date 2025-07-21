@@ -9,22 +9,22 @@ import SizeSelector from './components/SizeSelector'
 import DifficultySelector from './components/DifficultySelector'
 import GenerateButton from './components/GenerateButton'
 import PuzzleGrid from './components/PuzzleGrid'
-import type { Fruit, Constraint } from '../lib/types'
+import type { Cell, Constraint } from '../lib/types'
 import { solveLogically } from '../lib/generator/solveLogically'
 
 export default function GeneratorTab() {
-	const [puzzle, setPuzzle] = useState<(Fruit | null)[][]>([])
+	// puzzle ve diğer state'lerde Fruit | null yerine Cell kullanalım
+	const [puzzle, setPuzzle] = useState<Cell[][]>([])
 	const [constraints, setConstraints] = useState<Constraint[]>([])
 	const [gridSize, setGridSize] = useState<number>(6)
 	const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
 
-	// Direkt difficultyConfigs'den değerleri al
 	const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
 	function handleGenerate() {
-		let solution: Fruit[][]
+		let solution: Cell[][]
 		let masked: ReturnType<typeof maskPuzzle>
-		let logicalSolution: (Fruit | null)[][] | null
+		let logicalSolution: Cell[][] | null
 
 		do {
 			solution = generateFullSolution(gridSize)
@@ -45,10 +45,7 @@ export default function GeneratorTab() {
 				<SizeSelector value={gridSize} onChange={setGridSize} />
 				<DifficultySelector
 					value={difficulty}
-					onChange={(difficulty) => {
-						setDifficulty(difficulty)
-						// useEffect zaten güncelleme yapacağı için burada manuel güncelleme yapmıyoruz
-					}}
+					onChange={(diff) => setDifficulty(diff)}
 				/>
 				<GenerateButton onClick={handleGenerate} />
 			</div>

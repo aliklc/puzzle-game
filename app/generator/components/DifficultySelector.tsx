@@ -23,8 +23,10 @@ export default function DifficultySelector({ value, onChange }: DifficultySelect
 			value={value}
 			onValueChange={(difficulty) => {
 				const typedDifficulty = difficulty as DifficultyLevel
-				const config = difficultyConfigs[typedDifficulty]
-				onChange(typedDifficulty, config)
+				if (typedDifficulty in difficultyConfigs) {
+					const config = difficultyConfigs[typedDifficulty]
+					onChange(typedDifficulty, config)
+				}
 			}}
 		>
 			<SelectTrigger className="w-[160px]">

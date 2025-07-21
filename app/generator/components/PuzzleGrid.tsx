@@ -1,17 +1,17 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Constraint, ConstraintType, Fruit } from '@/app/lib/types'
+import type { Constraint, ConstraintType, Cell } from '@/app/lib/types'
 import ClickableCell from './ClickCell'
 
 interface PuzzleGridProps {
-	puzzle: (Fruit | null)[][]
+	puzzle: Cell[][]
 	constraints: Constraint[]
 }
 
 export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 	const size = puzzle.length
-	const [currentGrid, setCurrentGrid] = useState<(Fruit | null)[][]>([])
+	const [currentGrid, setCurrentGrid] = useState<Cell[][]>([])
 
 	// Puzzle değiştiğinde resetle
 	useEffect(() => {
@@ -20,8 +20,7 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 
 	const handleCellClick = (r: number, c: number) => {
 		const current = currentGrid[r][c]
-		const next: Fruit | null =
-			current === null ? '🍋' : current === '🍋' ? '🫐' : null
+		const next: Cell = current === null ? '🍋' : current === '🍋' ? '🫐' : null
 
 		const updated = [...currentGrid]
 		updated[r] = [...updated[r]]
@@ -29,6 +28,7 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 		setCurrentGrid(updated)
 	}
 
+	// Constraint'leri kolay erişim için map'e koy
 	const constraintMap = new Map<string, ConstraintType>()
 	for (const c of constraints) {
 		const key1 = `${c.from[0]}-${c.from[1]}-${c.to[0]}-${c.to[1]}`
@@ -38,7 +38,7 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 	}
 
 	const formatConstraint = (val: string) => {
-		if (val === 'x' || val === 'X') return '×'
+		if (val.toLowerCase() === 'x') return '×'
 		if (val === '=') return '='
 		return val
 	}
@@ -52,7 +52,6 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 					display: 'grid',
 					gridTemplateColumns: `repeat(${size}, 50px)`,
 					gridTemplateRows: `repeat(${size}, 50px)`,
-					gap: '0px',
 				}}
 			>
 				{currentGrid.map((row, r) =>
@@ -82,6 +81,7 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 								top: `${r * 50 + 15}px`,
 								width: '20px',
 								height: '20px',
+								userSelect: 'none',
 							}}
 						>
 							{formatConstraint(constraint)}
@@ -105,6 +105,7 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 								top: `${(r + 1) * 50 - 10}px`,
 								width: '20px',
 								height: '20px',
+								userSelect: 'none',
 							}}
 						>
 							{formatConstraint(constraint)}

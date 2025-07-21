@@ -1,7 +1,8 @@
-import { Fruit, Constraint } from '../types'
+import { Cell, Constraint } from '../types'
+import { FRUITS } from '../constants' 
 
 export function hasUniqueSolution(
-	board: (Fruit | null)[][],
+	board: Cell[][],
 	constraints: Constraint[],
 	maxSolutions = 2
 ): boolean {
@@ -27,14 +28,19 @@ export function hasUniqueSolution(
 	}
 
 	// Tam doğrulama fonksiyonu (generateFullSolution'daki ile aynı)
-	function isValidPosition(row: number, col: number, fruit: Fruit): boolean {
+	function isValidPosition(row: number, col: number, fruit: Cell): boolean {
 		const originalValue = board[row][col]
 		board[row][col] = fruit
 
 		// Yatay üçlü kontrolleri
 		for (let c = Math.max(0, col - 2); c <= Math.min(size - 3, col); c++) {
-			if (board[row][c] && board[row][c + 1] && board[row][c + 2] &&
-				board[row][c] === board[row][c + 1] && board[row][c + 1] === board[row][c + 2]) {
+			if (
+				board[row][c] &&
+				board[row][c + 1] &&
+				board[row][c + 2] &&
+				board[row][c] === board[row][c + 1] &&
+				board[row][c + 1] === board[row][c + 2]
+			) {
 				board[row][col] = originalValue
 				return false
 			}
@@ -42,15 +48,20 @@ export function hasUniqueSolution(
 
 		// Dikey üçlü kontrolleri
 		for (let r = Math.max(0, row - 2); r <= Math.min(size - 3, row); r++) {
-			if (board[r][col] && board[r + 1][col] && board[r + 2][col] &&
-				board[r][col] === board[r + 1][col] && board[r + 1][col] === board[r + 2][col]) {
+			if (
+				board[r][col] &&
+				board[r + 1][col] &&
+				board[r + 2][col] &&
+				board[r][col] === board[r + 1][col] &&
+				board[r + 1][col] === board[r + 2][col]
+			) {
 				board[row][col] = originalValue
 				return false
 			}
 		}
 
 		// Satır denge kontrolü
-		const rowFruits = board[row].filter(Boolean) as Fruit[]
+		const rowFruits = board[row].filter(Boolean)
 		const rowBlueberries = rowFruits.filter(f => f === '🫐').length
 		const rowLemons = rowFruits.filter(f => f === '🍋').length
 		if (rowBlueberries > size / 2 || rowLemons > size / 2) {
@@ -59,7 +70,7 @@ export function hasUniqueSolution(
 		}
 
 		// Sütun denge kontrolü
-		const colFruits = board.map(r => r[col]).filter(Boolean) as Fruit[]
+		const colFruits = board.map(r => r[col]).filter(Boolean)
 		const colBlueberries = colFruits.filter(f => f === '🫐').length
 		const colLemons = colFruits.filter(f => f === '🍋').length
 		if (colBlueberries > size / 2 || colLemons > size / 2) {
@@ -73,9 +84,8 @@ export function hasUniqueSolution(
 
 	function backtrack(row = 0, col = 0): boolean {
 		if (solutionCount >= maxSolutions) return false
-		
+
 		if (row === size) {
-			// Son constraint kontrolü
 			if (isConstraintValid()) {
 				solutionCount++
 			}
@@ -89,12 +99,10 @@ export function hasUniqueSolution(
 			return backtrack(nextRow, nextCol)
 		}
 
-		const fruits: Fruit[] = ['🫐', '🍋']
-		for (const fruit of fruits) {
+		for (const fruit of FRUITS) {
 			if (isValidPosition(row, col, fruit)) {
 				board[row][col] = fruit
 
-				// Anlık constraint kontrolü (erken kesme için)
 				if (isConstraintValid()) {
 					backtrack(nextRow, nextCol)
 				}
@@ -106,11 +114,9 @@ export function hasUniqueSolution(
 		return false
 	}
 
-	// Board'u kopyala
 	const puzzleCopy = board.map(row => [...row])
 	backtrack()
-	
-	// Orijinal board'u geri yükle
+
 	for (let r = 0; r < size; r++) {
 		for (let c = 0; c < size; c++) {
 			board[r][c] = puzzleCopy[r][c]

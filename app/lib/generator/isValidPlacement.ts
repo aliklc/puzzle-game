@@ -1,7 +1,7 @@
-import { Fruit } from '../types'
+import { Cell } from '../types'
 
 export function isValidPlacement(
-	board: (Fruit | null)[][],
+	board: Cell[][],
 	row: number,
 	col: number
 ): boolean {
@@ -22,7 +22,8 @@ export function isValidPlacement(
 
 	// Sol 1 + current + sağ 1
 	if (
-		col >= 1 && col < gridSize - 1 &&
+		col >= 1 &&
+		col < gridSize - 1 &&
 		board[row][col - 1] === current &&
 		board[row][col + 1] === current
 	)
@@ -47,7 +48,8 @@ export function isValidPlacement(
 
 	// Üst 1 + current + alt 1
 	if (
-		row >= 1 && row < gridSize - 1 &&
+		row >= 1 &&
+		row < gridSize - 1 &&
 		board[row - 1][col] === current &&
 		board[row + 1][col] === current
 	)
@@ -64,16 +66,16 @@ export function isValidPlacement(
 	// 2. Denge kuralı (satır)
 	const rowFruits = board[row].filter(Boolean)
 	if (
-		rowFruits.filter((f) => f === '🫐').length > gridSize / 2 ||
-		rowFruits.filter((f) => f === '🍋').length > gridSize / 2
+		rowFruits.filter(f => f === '🫐').length > gridSize / 2 ||
+		rowFruits.filter(f => f === '🍋').length > gridSize / 2
 	)
 		return false
 
 	// 2. Denge kuralı (sütun)
-	const colFruits = board.map((r) => r[col]).filter(Boolean)
+	const colFruits = board.map(r => r[col]).filter(Boolean)
 	if (
-		colFruits.filter((f) => f === '🫐').length > gridSize / 2 ||
-		colFruits.filter((f) => f === '🍋').length > gridSize / 2
+		colFruits.filter(f => f === '🫐').length > gridSize / 2 ||
+		colFruits.filter(f => f === '🍋').length > gridSize / 2
 	)
 		return false
 
