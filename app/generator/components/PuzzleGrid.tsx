@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import type { Constraint, ConstraintType, Cell } from '@/app/lib/types'
-import ClickableCell from './ClickCell'
+import ClickableCell from './ClickableCell'
 
 interface PuzzleGridProps {
 	puzzle: Cell[][]
@@ -64,7 +64,7 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 						<ClickableCell
 							key={`cell-${r}-${c}`}
 							value={cell}
-							locked={puzzle[r][c] !== null}
+                            locked={puzzle[r] && puzzle[r][c] !== null}
 							onClick={() => handleCellClick(r, c)}
 						/>
 					))

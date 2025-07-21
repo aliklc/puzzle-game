@@ -32,7 +32,7 @@ export function maskPuzzle(
 		blanks++
 	}
 
-	// Anlamlı constraint'ler (en az bir tarafı boş olanlar)
+	// Anlamlı constraint'ler
 	const meaningfulConstraints: Constraint[] = []
 
 	for (let r = 0; r < size; r++) {
