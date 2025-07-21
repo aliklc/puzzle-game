@@ -43,6 +43,11 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 		return val
 	}
 
+	// Eğer puzzle boşsa, hiçbir şey render etme
+	if (size === 0 || currentGrid.length === 0) {
+		return null
+	}
+
 	return (
 		<div className="inline-block relative">
 			{/* Grid */}
