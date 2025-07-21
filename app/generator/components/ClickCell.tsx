@@ -22,7 +22,7 @@ export default function ClickableCell({ value, locked, onClick }: ClickableCellP
 				}
 			}}
 			className={`w-12 h-12 flex items-center justify-center border border-gray-400 text-xl font-semibold cursor-pointer select-none ${
-				locked ? 'bg-gray-200 cursor-not-allowed' : 'bg-white hover:bg-yellow-100'
+				locked ? 'bg-white' : 'bg-white hover:bg-yellow-100'
 			}`}
 		>
 			{value ?? ''}

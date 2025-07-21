@@ -1,16 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { generateFullSolution } from '../lib/generator/generateFullSolution'
-import { maskPuzzle } from '../lib/generator/maskPuzzle'
 import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig'
-import { hasUniqueSolution } from '../lib/generator/hasUniqueSolution'
 import SizeSelector from './components/SizeSelector'
 import DifficultySelector from './components/DifficultySelector'
 import GenerateButton from './components/GenerateButton'
 import PuzzleGrid from './components/PuzzleGrid'
 import type { Cell, Constraint } from '../lib/types'
-import { solveLogically } from '../lib/generator/solveLogically'
+import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
 
 export default function GeneratorTab() {
 	// puzzle ve diğer state'lerde Fruit | null yerine Cell kullanalım
@@ -22,21 +19,14 @@ export default function GeneratorTab() {
 	const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
 	function handleGenerate() {
-		let solution: Cell[][]
-		let masked: ReturnType<typeof maskPuzzle>
-		let logicalSolution: Cell[][] | null
-
-		do {
-			solution = generateFullSolution(gridSize)
-			masked = maskPuzzle(solution, blankRatio, constraintRatio)
-			logicalSolution = solveLogically(masked.puzzle, masked.constraints)
-		} while (
-			!hasUniqueSolution(masked.puzzle, masked.constraints) ||
-			logicalSolution === null
+		const { puzzle, constraints } = generatePlayablePuzzle(
+			gridSize,
+			blankRatio,
+			constraintRatio
 		)
 
-		setPuzzle(masked.puzzle)
-		setConstraints(masked.constraints)
+		setPuzzle(puzzle)
+		setConstraints(constraints)
 	}
 
 	return (
