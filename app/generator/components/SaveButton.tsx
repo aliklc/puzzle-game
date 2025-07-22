@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import type { Cell, Constraint, SavedPuzzle } from '@/app/lib/types'
+import type { Cell, Constraint } from '@/app/lib/types'
 import { Button } from '@/components/ui/button'
 import { DifficultyLevel } from '@/app/lib/difficultyConfig'
 
@@ -11,28 +11,16 @@ interface SaveButtonProps {
 	solution: Cell[][]
 	gridSize: number
 	difficulty: DifficultyLevel
+	onSaved?: () => void
 }
 
-export default function SaveButton({ puzzle, constraints, solution, gridSize, difficulty }: SaveButtonProps) {
-	function handleSave() {
-		if (puzzle.length === 0 || solution.length === 0) {
-			return
-		}
-
-		// Mevcut kayıtları çek
-		const existing = localStorage.getItem('tangly_puzzles')
-		const puzzleList: SavedPuzzle[] = existing ? JSON.parse(existing) : []
-
+export default function SaveButton({ puzzle, constraints, solution, gridSize, difficulty,onSaved }: SaveButtonProps) {
+	async function handleSave() {
+		if (puzzle.length === 0 || solution.length === 0) return
 
 		const id = generatePuzzleId(solution)
 
-		// Daha önce kaydedilmişse engelle
-		const alreadySaved = puzzleList.some((p) => p.id === id)
-		if (alreadySaved) {
-			return
-		}
-
-		const newPuzzleData: SavedPuzzle = {
+		const newPuzzleData = {
 			id,
 			puzzle,
 			constraints,
@@ -41,9 +29,18 @@ export default function SaveButton({ puzzle, constraints, solution, gridSize, di
 			difficulty,
 		}
 
-		puzzleList.push(newPuzzleData)
-		localStorage.setItem('tangly_puzzles', JSON.stringify(puzzleList))
+		// ✅ veritabanına gönder
+		const res = await fetch('/api/save', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(newPuzzleData),
+		})
 
+		if (res.ok) {
+			if (onSaved) onSaved()
+		} else {
+			console.error('Veritabanına kaydedilemedi.')
+		}
 	}
 
 	function generatePuzzleId(solution: Cell[][]): number {

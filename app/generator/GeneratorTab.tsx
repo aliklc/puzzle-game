@@ -6,19 +6,20 @@ import SizeSelector from './components/SizeSelector'
 import DifficultySelector from './components/DifficultySelector'
 import GenerateButton from './components/GenerateButton'
 import PuzzleGrid from './components/PuzzleGrid'
-import type { Cell, Constraint } from '../lib/types'
-import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
 import SaveButton from './components/SaveButton'
 import PuzzleList from './components/PuzzleList'
 
+import type { Cell, Constraint } from '../lib/types'
+import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
 
 export default function GeneratorTab() {
-	// puzzle ve diğer state'lerde Fruit | null yerine Cell kullanalım
 	const [puzzle, setPuzzle] = useState<Cell[][]>([])
 	const [constraints, setConstraints] = useState<Constraint[]>([])
+	const [solution, setSolution] = useState<Cell[][]>([])
 	const [gridSize, setGridSize] = useState<number>(6)
 	const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
-	const [solution, setSolution] = useState<Cell[][]>([])
+	const [refreshKey, setRefreshKey] = useState(0)
+
 	const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
 	function handleGenerate() {
@@ -34,36 +35,43 @@ export default function GeneratorTab() {
 
 		const id = Date.now()
 
-		console.log(`\n Puzzle ID: ${id}\n`)
-		console.log(` Grid Size: ${gridSize}x${gridSize}`)
-		console.log(`Difficulty: ${difficulty.toUpperCase()}\n`)
-		
-		console.log(' Puzzle (User View):')
+		console.log(`🧩 Puzzle ID: ${id}`)
+		console.log(`📏 Grid Size: ${gridSize}x${gridSize}`)
+		console.log(`🎯 Difficulty: ${difficulty.toUpperCase()}`)
+		console.log('👀 Puzzle (User View):')
 		console.table(puzzle)
-		console.log(' Solution (Full Answer):')
+		console.log('✅ Solution (Full Answer):')
 		console.table(solution)
-		console.log(' Constraints:')
+		console.log('📐 Constraints:')
 		console.dir(constraints, { depth: null })
+	}
+
+	function handlePuzzleSaved() {
+		setRefreshKey((prev) => prev + 1)
 	}
 
 	return (
 		<div className="flex flex-col items-center space-y-4">
-
-			<PuzzleList
-				onSelect={(puzzle, constraints, solution) => {
-					setPuzzle(puzzle)
-					setConstraints(constraints)
-					setSolution(solution)
-				}}
-			/>
 			<div className="flex items-center space-x-4">
-				<SizeSelector value={gridSize} onChange={setGridSize} />
-				<DifficultySelector
-					value={difficulty}
-					onChange={(diff) => setDifficulty(diff)}
+				<PuzzleList
+					onSelect={(puzzle, constraints, solution) => {
+						setPuzzle(puzzle)
+						setConstraints(constraints)
+						setSolution(solution)
+					}}
+					refreshKey={refreshKey}
 				/>
+				<SizeSelector value={gridSize} onChange={setGridSize} />
+				<DifficultySelector value={difficulty} onChange={setDifficulty} />
 				<GenerateButton onClick={handleGenerate} />
-				<SaveButton puzzle={puzzle} constraints={constraints} solution={solution} gridSize={gridSize} difficulty={difficulty}/>
+				<SaveButton
+					puzzle={puzzle}
+					constraints={constraints}
+					solution={solution}
+					gridSize={gridSize}
+					difficulty={difficulty}
+					onSaved={handlePuzzleSaved}
+				/>
 			</div>
 			<PuzzleGrid puzzle={puzzle} constraints={constraints} />
 		</div>
