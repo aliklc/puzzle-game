@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
-import type { PuzzleDetail, SaveButtonProps } from '@/app/lib/types'
 import { Button } from '@/components/ui/button'
+import type { PuzzleDetail, SaveButtonProps } from '@/app/lib/types'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 
 function generateHash(obj: unknown): string {
@@ -23,27 +24,30 @@ export default function SaveButton({
     difficulty,
     onSaved,
 }: SaveButtonProps) {
-    async function handleSave() {
-        if (puzzle.length === 0 || solution.length === 0) return
+    const queryClient = useQueryClient()
 
-        const puzzleHash = generateHash(puzzle)
-        const newPuzzleData = {
-            title: `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`,
-            puzzle_data: puzzle,
-            constraints,
-            solution_data: solution,
-            puzzle_hash: puzzleHash,
-        }
+    const mutation = useMutation({
+        mutationFn: async () => {
+            const puzzleHash = generateHash(puzzle)
+            const newPuzzleData = {
+                title: `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`,
+                puzzle_data: puzzle,
+                constraints,
+                solution_data: solution,
+                puzzle_hash: puzzleHash,
+            }
 
-        try {
             const { data } = await axios.post<PuzzleDetail>('/api/puzzles', newPuzzleData)
-            console.log(data)
-
+            return data
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['puzzle-summaries'] })
             if (onSaved) onSaved()
-        } catch (error) {
-            console.error('Kayıt işlemi sırasında hata:', error)
-        }
-    }
+        },
+        onError: (err) => {
+            console.error('Kayıt hatası:', err)
+        },
+    })
 
-    return <Button onClick={handleSave}>Kaydet</Button>
+    return <Button onClick={() => mutation.mutate()}>Kaydet</Button>
 }
