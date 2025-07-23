@@ -3,7 +3,7 @@
 import React from 'react'
 import type { PuzzleDetail, SaveButtonProps } from '@/app/lib/types'
 import { Button } from '@/components/ui/button'
-import axios from '@/app/lib/api/axios'
+import axios from 'axios'
 
 function generateHash(obj: unknown): string {
     const str = JSON.stringify(obj)
@@ -36,7 +36,7 @@ export default function SaveButton({
         }
 
         try {
-            const { data } = await axios.post<PuzzleDetail>('/puzzles', newPuzzleData)
+            const { data } = await axios.post<PuzzleDetail>('/api/puzzles', newPuzzleData)
             console.log(data)
 
             if (onSaved) onSaved()

@@ -9,7 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import axios from '@/app/lib/api/axios'
+import axios from 'axios'
 
 export default function PuzzleList({ onSelect, refreshKey }: PuzzleListProps) {
     const [puzzleSummaries, setPuzzleSummaries] = useState<PuzzleSummary[]>([])
@@ -18,7 +18,7 @@ export default function PuzzleList({ onSelect, refreshKey }: PuzzleListProps) {
     useEffect(() => {
         async function fetchPuzzleSummaries() {
             try {
-                const { data } = await axios.get<PuzzleSummary[]>('/puzzles')
+                const { data } = await axios.get<PuzzleSummary[]>('/api/puzzles')
                 setPuzzleSummaries(Array.isArray(data) ? data : [])
             } catch (err) {
                 console.error('Puzzle özetleri getirilirken hata:', err)
@@ -30,7 +30,7 @@ export default function PuzzleList({ onSelect, refreshKey }: PuzzleListProps) {
 
     async function fetchPuzzleDetail(id: string) {
         try {
-            const { data } = await axios.get<PuzzleDetail>(`/puzzles/${id}`)
+            const { data } = await axios.get<PuzzleDetail>(`/api/puzzles/${id}`)
             onSelect(data.puzzle_data, data.constraints, data.solution_data)
         } catch (err) {
             console.error('Puzzle detayları getirilirken hata:', err)
