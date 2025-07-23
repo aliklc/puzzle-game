@@ -1,57 +1,49 @@
 'use client'
 
 import React from 'react'
-import type { Cell, Constraint } from '@/app/lib/types'
+import type { PuzzleDetail, SaveButtonProps } from '@/app/lib/types'
 import { Button } from '@/components/ui/button'
-import { DifficultyLevel } from '@/app/lib/difficultyConfig'
+import axios from '@/app/lib/api/axios'
 
-interface SaveButtonProps {
-	puzzle: Cell[][]
-	constraints: Constraint[]
-	solution: Cell[][]
-	gridSize: number
-	difficulty: DifficultyLevel
-	onSaved?: () => void
+function generateHash(obj: unknown): string {
+    const str = JSON.stringify(obj)
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i)
+        hash |= 0
+    }
+    return Math.abs(hash).toString()
 }
 
-export default function SaveButton({ puzzle, constraints, solution, gridSize, difficulty,onSaved }: SaveButtonProps) {
-	async function handleSave() {
-		if (puzzle.length === 0 || solution.length === 0) return
+export default function SaveButton({
+    puzzle,
+    constraints,
+    solution,
+    gridSize,
+    difficulty,
+    onSaved,
+}: SaveButtonProps) {
+    async function handleSave() {
+        if (puzzle.length === 0 || solution.length === 0) return
 
-		const id = generatePuzzleId(solution)
+        const puzzleHash = generateHash(puzzle)
+        const newPuzzleData = {
+            title: `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`,
+            puzzle_data: puzzle,
+            constraints,
+            solution_data: solution,
+            puzzle_hash: puzzleHash,
+        }
 
-		const newPuzzleData = {
-			id,
-			puzzle,
-			constraints,
-			solution,
-			gridSize,
-			difficulty,
-		}
+        try {
+            const { data } = await axios.post<PuzzleDetail>('/puzzles', newPuzzleData)
+            console.log(data)
 
-		// ✅ veritabanına gönder
-		const res = await fetch('/api/save', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(newPuzzleData),
-		})
+            if (onSaved) onSaved()
+        } catch (error) {
+            console.error('Kayıt işlemi sırasında hata:', error)
+        }
+    }
 
-		if (res.ok) {
-			if (onSaved) onSaved()
-		} else {
-			console.error('Veritabanına kaydedilemedi.')
-		}
-	}
-
-	function generatePuzzleId(solution: Cell[][]): number {
-		const json = JSON.stringify(solution)
-		let hash = 0
-		for (let i = 0; i < json.length; i++) {
-			hash = (hash << 5) - hash + json.charCodeAt(i)
-			hash |= 0
-		}
-		return Math.abs(hash)
-	}
-
-	return <Button onClick={handleSave}>Kaydet</Button>
+    return <Button onClick={handleSave}>Kaydet</Button>
 }

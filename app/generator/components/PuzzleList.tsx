@@ -1,71 +1,65 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import type { Cell, Constraint } from '@/app/lib/types'
+import type { PuzzleDetail, PuzzleListProps, PuzzleSummary } from '@/app/lib/types'
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select'
-
-interface PuzzleListProps {
-	onSelect: (puzzle: Cell[][], constraints: Constraint[], solution: Cell[][]) => void
-	refreshKey?: number
-}
-
-interface PuzzleRow {
-	id: number
-	title: string
-	puzzle_data: Cell[][]
-	solution_data: Cell[][]
-	constraints: Constraint[]
-}
+import axios from '@/app/lib/api/axios'
 
 export default function PuzzleList({ onSelect, refreshKey }: PuzzleListProps) {
-	const [savedPuzzles, setSavedPuzzles] = useState<PuzzleRow[]>([])
-	const [selectedId, setSelectedId] = useState<string>('')
+    const [puzzleSummaries, setPuzzleSummaries] = useState<PuzzleSummary[]>([])
+    const [selectedId, setSelectedId] = useState<string>('')
 
-	useEffect(() => {
-		async function fetchPuzzles() {
-			try {
-				const res = await fetch('/api/list')
-				const data: PuzzleRow[] = await res.json()
-				setSavedPuzzles(data)
-			} catch (err) {
-				console.error('Puzzles getirilirken hata:', err)
-			}
-		}
-		fetchPuzzles()
-	}, [refreshKey])
+    useEffect(() => {
+        async function fetchPuzzleSummaries() {
+            try {
+                const { data } = await axios.get<PuzzleSummary[]>('/puzzles')
+                setPuzzleSummaries(Array.isArray(data) ? data : [])
+            } catch (err) {
+                console.error('Puzzle özetleri getirilirken hata:', err)
+                setPuzzleSummaries([])
+            }
+        }
+        fetchPuzzleSummaries()
+    }, [refreshKey])
 
-	function handleValueChange(value: string) {
-		setSelectedId(value)
-		const selectedPuzzle = savedPuzzles.find((p) => p.id.toString() === value)
-		if (selectedPuzzle) {
-			onSelect(selectedPuzzle.puzzle_data, selectedPuzzle.constraints, selectedPuzzle.solution_data)
-		}
-	}
+    async function fetchPuzzleDetail(id: string) {
+        try {
+            const { data } = await axios.get<PuzzleDetail>(`/puzzles/${id}`)
+            onSelect(data.puzzle_data, data.constraints, data.solution_data)
+        } catch (err) {
+            console.error('Puzzle detayları getirilirken hata:', err)
+        }
+    }
 
-	return (
-		<Select value={selectedId || (savedPuzzles.length === 0 ? 'empty' : undefined)} onValueChange={handleValueChange}>
-			<SelectTrigger className="w-40">
-				<SelectValue placeholder="Bulmacalar" />
-			</SelectTrigger>
-			<SelectContent>
-				{savedPuzzles.length === 0 ? (
-					<SelectItem value="empty" disabled>
-						Hiç bulmaca yok
-					</SelectItem>
-				) : (
-					savedPuzzles.map((p) => (
-						<SelectItem key={p.id} value={p.id.toString()}>
-							{p.title}
-						</SelectItem>
-					))
-				)}
-			</SelectContent>
-		</Select>
-	)
+    function handleValueChange(value: string) {
+        setSelectedId(value)
+        fetchPuzzleDetail(value)
+    }
+
+    return (
+        <Select value={selectedId} onValueChange={handleValueChange}>
+            <SelectTrigger className="w-40">
+                <SelectValue placeholder="Bulmacalar" />
+            </SelectTrigger>
+            <SelectContent>
+                {puzzleSummaries.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                        Hiç bulmaca yok
+                    </SelectItem>
+                ) : (
+                    puzzleSummaries.map((puzzle) => (
+                        <SelectItem key={puzzle.id} value={puzzle.id.toString()}>
+                            {puzzle.title || 'İsimsiz Bulmaca'}
+                        </SelectItem>
+                    ))
+                )}
+            </SelectContent>
+        </Select>
+    )
 }
