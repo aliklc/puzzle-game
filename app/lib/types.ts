@@ -11,24 +11,10 @@ export interface Constraint {
 	type: ConstraintType
 }
 
-export interface PuzzleListProps {
-    onSelect: (puzzle: Cell[][], constraints: Constraint[], solution: Cell[][]) => void
-    refreshKey?: number
-}
-
 export interface PuzzleSummary {
     id: number
     title: string
 }
-
-export interface PuzzleDetail {
-    id: number
-    title: string
-    puzzle_data: Cell[][]
-    solution_data: Cell[][]
-    constraints: Constraint[]
-}
-
 
 export interface SaveButtonProps {
 	puzzle: Cell[][]
@@ -37,4 +23,23 @@ export interface SaveButtonProps {
 	gridSize: number
 	difficulty: DifficultyLevel
 	onSaved?: () => void
+}
+
+
+export interface PuzzleDetail {
+    id: string;
+    title: string;
+    puzzle_data: Cell[][];
+    constraints: Constraint[];
+    solution_data: Cell[][];
+    puzzle_hash: string;
+}
+
+export interface PuzzleListProps {
+    initialData: PuzzleSummary[];
+    onSelect: (puzzle: Cell[][], constraints: Constraint[], solution: Cell[][]) => void;
+}
+
+export interface GeneratorClientUIProps {
+    initialSummaries: PuzzleSummary[];
 }

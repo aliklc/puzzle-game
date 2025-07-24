@@ -8,46 +8,43 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import type { PuzzleDetail, PuzzleListProps, PuzzleSummary } from '@/app/lib/types'
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import type { PuzzleListProps } from '@/app/lib/types'
+import { fetchPuzzleDetail } from '@/app/lib/actions'
 
-async function fetchPuzzleSummaries(): Promise<PuzzleSummary[]> {
-    const { data } = await axios.get('/api/puzzles')
-    return data
-}
-
-async function fetchPuzzleDetail(id: string): Promise<PuzzleDetail> {
-    const { data } = await axios.get(`/api/puzzles/${id}`)
-    return data
-}
-
-export default function PuzzleList({ onSelect, refreshKey }: PuzzleListProps) {
-    const [selectedId, setSelectedId] = React.useState('')
-
-    const { data: summaries = [], isLoading } = useQuery({
-        queryKey: ['puzzle-summaries', refreshKey],
-        queryFn: fetchPuzzleSummaries,
-    })
+export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
+    const [selectedId, setSelectedId] = React.useState('');
+    const [isFetching, setIsFetching] = React.useState(false);
 
     async function handleValueChange(id: string) {
-        setSelectedId(id)
-        const detail = await fetchPuzzleDetail(id)
-        onSelect(detail.puzzle_data, detail.constraints, detail.solution_data)
+        if (!id || id === 'empty') return;
+        
+        setSelectedId(id);
+        setIsFetching(true);
+        try {
+            const detail = await fetchPuzzleDetail(id);
+            onSelect(detail.puzzle_data, detail.constraints, detail.solution_data);
+        } catch (error) {
+            console.error("Failed to fetch puzzle detail:", error);
+            alert("Bulmaca detayı yüklenemedi.");
+        } finally {
+            setIsFetching(false);
+        }
     }
 
+    const placeholderText = isFetching ? "Yükleniyor..." : "Bulmacalar";
+
     return (
-        <Select value={selectedId} onValueChange={handleValueChange}>
+        <Select value={selectedId} onValueChange={handleValueChange} disabled={isFetching}>
             <SelectTrigger className="w-40">
-                <SelectValue placeholder={isLoading ? "Yükleniyor..." : "Bulmacalar"} />
+                <SelectValue placeholder={placeholderText} />
             </SelectTrigger>
             <SelectContent>
-                {summaries.length === 0 ? (
+                {initialData.length === 0 ? (
                     <SelectItem value="empty" disabled>
                         Hiç bulmaca yok
                     </SelectItem>
                 ) : (
-                    summaries.map((puzzle) => (
+                    initialData.map((puzzle) => (
                         <SelectItem key={puzzle.id} value={puzzle.id.toString()}>
                             {puzzle.title || 'İsimsiz Bulmaca'}
                         </SelectItem>
@@ -55,5 +52,5 @@ export default function PuzzleList({ onSelect, refreshKey }: PuzzleListProps) {
                 )}
             </SelectContent>
         </Select>
-    )
+    );
 }
