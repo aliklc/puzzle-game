@@ -1,3 +1,4 @@
+import 'server-only'
 import axios from 'axios'
 
 const api = axios.create({
@@ -6,5 +7,10 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 })
+
+api.interceptors.request.use((config) => {
+    config.headers['Cache-Control'] = 'no-store';
+    return config;
+});
 
 export default api

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import {useState, useTransition } from 'react'
 import {
     Select,
     SelectContent,
@@ -9,32 +9,38 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import type { PuzzleListProps } from '@/app/lib/types'
-import { fetchPuzzleDetail } from '@/app/lib/actions'
+import { fetchPuzzleDetailAction } from '@/app/lib/api/Puzzle/PuzzleDetailAction'
+
+
 
 export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
-    const [selectedId, setSelectedId] = React.useState('');
-    const [isFetching, setIsFetching] = React.useState(false);
+    const [selectedId, setSelectedId] = useState('');
+    const [isPending, startTransition] = useTransition();
 
-    async function handleValueChange(id: string) {
+    function handleValueChange(id: string) {
         if (!id || id === 'empty') return;
         
         setSelectedId(id);
-        setIsFetching(true);
-        try {
-            const detail = await fetchPuzzleDetail(id);
-            onSelect(detail.puzzle_data, detail.constraints, detail.solution_data);
-        } catch (error) {
-            console.error("Failed to fetch puzzle detail:", error);
-            alert("Bulmaca detayı yüklenemedi.");
-        } finally {
-            setIsFetching(false);
-        }
+        //düşük öncelikli iş yapmak için
+        startTransition(async () => {
+            const result = await fetchPuzzleDetailAction(id);
+            
+            if (result.success && result.data) {
+                onSelect(
+                    result.data.puzzle_data, 
+                    result.data.constraints, 
+                    result.data.solution_data
+                );
+            } else {
+                alert(result.error || "Bulmaca detayı yüklenemedi.");
+            }
+        });
     }
 
-    const placeholderText = isFetching ? "Yükleniyor..." : "Bulmacalar";
+    const placeholderText = isPending ? "Yükleniyor..." : "Bulmacalar";
 
     return (
-        <Select value={selectedId} onValueChange={handleValueChange} disabled={isFetching}>
+        <Select value={selectedId} onValueChange={handleValueChange} disabled={isPending}>
             <SelectTrigger className="w-40">
                 <SelectValue placeholder={placeholderText} />
             </SelectTrigger>

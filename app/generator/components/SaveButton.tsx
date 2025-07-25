@@ -1,24 +1,20 @@
 'use client'
 
-import React from 'react'
+import React, { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import type { PuzzleDetail, SaveButtonProps } from '@/app/lib/types'
-import { useMutation } from '@tanstack/react-query'
-import { savePuzzle } from '@/app/lib/actions'
+import type { SaveButtonProps } from '@/app/lib/types'
+import { savePuzzleAction } from '@/app/lib/api/Puzzle/SavePuzzleAction'
+import { useRouter } from 'next/navigation'
 
-// Helper function
 function generateHash(obj: unknown): string {
-    const str = JSON.stringify(obj);
-    let hash = 0;
+    const str = JSON.stringify(obj)
+    let hash = 0
     for (let i = 0; i < str.length; i++) {
-        hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0;
+        hash = (hash << 5) - hash + str.charCodeAt(i)
+        hash |= 0
     }
-    return Math.abs(hash).toString();
+    return Math.abs(hash).toString()
 }
-
-type SavePuzzleInput = Omit<PuzzleDetail, 'id'>;
-type SavePuzzleResult = Awaited<ReturnType<typeof savePuzzle>>;
 
 export default function SaveButton({
     puzzle,
@@ -26,45 +22,45 @@ export default function SaveButton({
     solution,
     gridSize,
     difficulty,
-    onSaved,
 }: SaveButtonProps) {
-    const mutation = useMutation<SavePuzzleResult, Error, SavePuzzleInput>({
-        mutationFn: savePuzzle,
-        onSuccess: (result) => {
-            if (result.success) {
-                console.log('Başarıyla kaydedildi:', result.data);
-                if (onSaved) onSaved();
-            } else {
-                console.error('Kayıt hatası:', result.error);
-                alert(`Hata: ${result.error}`);
-            }
-        },
-        onError: (err) => {
-            console.error('Mutasyon hatası:', err);
-            alert(`Bir hata oluştu: ${err.message}`);
-        },
-    });
+    const [isPending, startTransition] = useTransition()
+    const router = useRouter()
 
     function handleSave() {
         if (!puzzle || puzzle.length === 0) {
-            alert('Kaydedilecek bir bulmaca yok. Lütfen önce bir bulmaca oluşturun.');
-            return;
+            alert('There is no puzzle to save. Please create a puzzle first.')
+            return
         }
 
-        const puzzleHash = generateHash(puzzle);
-        const newPuzzleData: SavePuzzleInput = {
-            title: `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`,
-            puzzle_data: puzzle,
-            constraints,
-            solution_data: solution,
-            puzzle_hash: puzzleHash,
-        };
-        mutation.mutate(newPuzzleData);
+        const puzzleHash = generateHash(puzzle)
+        const title = `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`
+
+        startTransition(async () => {
+            try {
+                const formData = new FormData()
+                formData.append('title', title)
+                formData.append('puzzle_data', JSON.stringify(puzzle))
+                formData.append('constraints', JSON.stringify(constraints))
+                formData.append('solution_data', JSON.stringify(solution))
+                formData.append('puzzle_hash', puzzleHash)
+
+                const result = await savePuzzleAction(formData)
+
+                if (result.success) {
+                    console.log('Başarıyla kaydedildi:', result.data)
+                    router.refresh()
+                } else {
+                    alert(result.error || 'Kayıt sırasında hata oluştu')
+                }
+            } catch (error) {
+                alert('Kayıt isteği başarısız: ' + (error as Error).message)
+            }
+        })
     }
 
     return (
-        <Button onClick={handleSave} disabled={mutation.isPending}>
-            {mutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+        <Button onClick={handleSave} disabled={isPending}>
+            {isPending ? 'Kaydediliyor...' : 'Kaydet'}
         </Button>
-    );
+    )
 }

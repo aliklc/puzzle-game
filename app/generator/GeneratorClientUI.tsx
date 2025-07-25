@@ -21,7 +21,7 @@ export default function GeneratorClientUI({
     const [constraints, setConstraints] = useState<Constraint[]>([])
     const [solution, setSolution] = useState<Cell[][]>([])
     const [gridSize, setGridSize] = useState<number>(6)
-    const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium')
+    const [difficulty, setDifficulty] = useState<DifficultyLevel>('Medium')
     
     const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
