@@ -1,5 +1,3 @@
-'use server'
-
 import api from '../axios'
 
 export async function savePuzzleAction(formData: FormData) {

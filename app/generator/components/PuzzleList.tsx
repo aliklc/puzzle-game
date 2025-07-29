@@ -1,6 +1,6 @@
 'use client'
 
-import {useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import {
     Select,
     SelectContent,
@@ -9,40 +9,36 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import type { PuzzleListProps } from '@/app/lib/types'
-import { fetchPuzzleDetailAction } from '@/app/lib/api/Puzzle/PuzzleDetailAction'
-
-
+import { fetchPuzzleDetailServerAction } from '../../lib/api/actions/fetchPuzzleDetailServerAction'
 
 export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
-    const [selectedId, setSelectedId] = useState('');
-    const [isPending, startTransition] = useTransition();
+    const [selectedId, setSelectedId] = useState('')
+    const [isPending, startTransition] = useTransition()
 
     function handleValueChange(id: string) {
-        if (!id || id === 'empty') return;
-        
-        setSelectedId(id);
-        //düşük öncelikli iş yapmak için
+        if (!id || id === 'empty') return
+
+        setSelectedId(id)
+
         startTransition(async () => {
-            const result = await fetchPuzzleDetailAction(id);
-            
+            const result = await fetchPuzzleDetailServerAction(id)
+
             if (result.success && result.data) {
                 onSelect(
-                    result.data.puzzle_data, 
-                    result.data.constraints, 
+                    result.data.puzzle_data,
+                    result.data.constraints,
                     result.data.solution_data
-                );
+                )
             } else {
-                alert(result.error || "Bulmaca detayı yüklenemedi.");
+                alert(result.error || 'Bulmaca detayı yüklenemedi.')
             }
-        });
+        })
     }
-
-    const placeholderText = isPending ? "Yükleniyor..." : "Bulmacalar";
 
     return (
         <Select value={selectedId} onValueChange={handleValueChange} disabled={isPending}>
             <SelectTrigger className="w-40">
-                <SelectValue placeholder={placeholderText} />
+                <SelectValue placeholder={isPending ? 'Yükleniyor...' : 'Bulmacalar'} />
             </SelectTrigger>
             <SelectContent>
                 {initialData.length === 0 ? (
@@ -58,5 +54,5 @@ export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
                 )}
             </SelectContent>
         </Select>
-    );
+    )
 }

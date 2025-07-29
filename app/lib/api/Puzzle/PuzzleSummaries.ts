@@ -1,5 +1,3 @@
-'use server'
-
 import api from '../axios'
 import type {  PuzzleSummary } from '../../types'
 

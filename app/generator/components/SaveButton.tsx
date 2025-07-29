@@ -3,7 +3,7 @@
 import React, { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import type { SaveButtonProps } from '@/app/lib/types'
-import { savePuzzleAction } from '@/app/lib/api/Puzzle/SavePuzzleAction'
+import { savePuzzleAction } from '@/app/lib/api/Puzzle/SavePuzzle'
 import { useRouter } from 'next/navigation'
 
 function generateHash(obj: unknown): string {
