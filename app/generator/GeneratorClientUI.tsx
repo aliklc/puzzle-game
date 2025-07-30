@@ -1,3 +1,4 @@
+// app/generator/GeneratorClientUI.tsx
 'use client'
 
 import { useState } from 'react'
@@ -34,6 +35,10 @@ export default function GeneratorClientUI({
         setPuzzle(puzzle)
         setConstraints(constraints)
         setSolution(solution)
+
+        console.log(puzzle)
+        console.log(constraints)
+        console.log(solution)
     }
 
     return (

@@ -1,3 +1,4 @@
+// app/lib/api/puzzle/PuzzleDetails.ts
 import api from '../axios'
 import type { PuzzleDetail } from '../../types'
 

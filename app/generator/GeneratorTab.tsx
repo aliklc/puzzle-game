@@ -1,3 +1,4 @@
+// app/generator/GeneratorTab.tsx
 import { fetchPuzzleSummaries } from '../lib/api/Puzzle/PuzzleSummaries'
 import GeneratorClientUI from './GeneratorClientUI'
 export const dynamic = 'force-dynamic'

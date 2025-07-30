@@ -1,3 +1,6 @@
+// app/game/GameTab.tsx
+import GameClientUI from './GameClientUI'
+
 export default function GameTab() {
-	return <div> Game tab </div>
+    return <GameClientUI />
 }
