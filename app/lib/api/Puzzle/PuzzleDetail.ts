@@ -1,15 +1,9 @@
-// app/lib/api/puzzle/PuzzleDetails.ts
 import api from '../axios'
-import type { PuzzleDetail } from '../../types'
 
-
-export async function fetchPuzzleDetailAction(id: string): Promise<{
-    success: boolean
-    data?: PuzzleDetail
-    error?: string
-}> {
+export async function fetchPuzzleDetailAction(id: string, access_token?: string) {
     try {
-        const { data } = await api.get(`/puzzles/${id}`)
+        const headers = access_token ? { Authorization: `Bearer ${access_token}` } : {}
+        const { data } = await api.get(`/puzzles/${id}`, { headers })
         return { success: true, data }
     } catch (error) {
         console.error('Failed to fetch puzzle detail:', error)

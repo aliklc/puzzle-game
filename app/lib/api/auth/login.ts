@@ -1,29 +1,30 @@
 import api from '../axios'
-
-type LoginResponse = {
-    access_token: string
-    refresh_token: string
-    token_type: string
-}
+import axios from 'axios'
 
 export async function login(
     username: string,
     password: string
-): Promise<{ success: boolean; data?: LoginResponse; error?: string }> {
+): Promise<{ success: boolean; error?: string }> {
     try {
         const params = new URLSearchParams()
         params.append('username', username)
         params.append('password', password)
 
-        const { data } = await api.post('/auth/login', params, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        await api.post('/auth/login', params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            withCredentials: true,
         })
 
-        return { success: true, data }
-    } catch (err: any) {
-        return {
-            success: false,
-            error: err.response?.data?.detail || 'Giriş başarısız',
+        return { success: true }
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            return {
+                success: false,
+                error: error.response?.data?.detail || 'Giriş başarısız',
+            }
         }
+        return { success: false, error: 'Bilinmeyen bir hata oluştu' }
     }
 }

@@ -14,12 +14,11 @@ export default function LoginForm() {
         e.preventDefault()
         const res = await login(username, password)
         if (res.success) {
-            localStorage.setItem('access_token', res.data.access_token)
-            localStorage.setItem('refresh_token', res.data.refresh_token)
+            // 🎯 Artık localStorage'a token kaydetmeye gerek yok
             setSuccess(true)
             setError('')
         } else {
-            setError(res.error)
+            setError(res.error || 'Bilinmeyen hata')
         }
     }
 

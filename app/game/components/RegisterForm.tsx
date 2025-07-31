@@ -18,7 +18,7 @@ export default function RegisterForm() {
             setSuccess(true)
             setError('')
         } else {
-            setError(res.error)
+            setError(res.error ?? 'Bilinmeyen bir hata oluştu')
         }
     }
 
