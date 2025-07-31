@@ -1,7 +1,6 @@
-// app/lib/api/Puzzle/PuzzleSummaries.ts
-import { PuzzleSummary } from '../../types'
+import { cookies } from 'next/headers'
 import api from '../axios'
-import { cookies } from 'next/headers'  // Next.js 13 App Router'da cookie okumak için
+import { PuzzleSummary } from '../../types'
 
 export async function fetchPuzzleSummaries(): Promise<PuzzleSummary[]> {
     try {
@@ -17,7 +16,6 @@ export async function fetchPuzzleSummaries(): Promise<PuzzleSummary[]> {
                 Authorization: `Bearer ${access_token}`
             }
         })
-
 
         console.log("Puzzle summaries from API:", data)
         return data
