@@ -1,10 +1,7 @@
-// app/generator/GeneratorTab.tsx
-import { fetchPuzzleSummaries } from '../lib/api/Puzzle/PuzzleSummaries'
-import GeneratorClientUI from './GeneratorClientUI'
-export const dynamic = 'force-dynamic'
+'use client'
 
-export default async function GeneratorTab() {
-    // Sayfa render edilmeden ÖNCE sunucuda veri çekilir.
-    const initialSummaries = await fetchPuzzleSummaries()
-    return <GeneratorClientUI initialSummaries={initialSummaries} />
+import GeneratorClientUI from './GeneratorClientUI'
+
+export default function GeneratorTab() {
+  return <GeneratorClientUI />
 }
