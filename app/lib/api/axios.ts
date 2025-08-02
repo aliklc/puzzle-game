@@ -1,23 +1,25 @@
-import axios, { type AxiosError } from 'axios'
+import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 
 const api = axios.create({
   baseURL: 'http://localhost:8000',
   withCredentials: true,
 })
 
-// Sadece bir tane refresh isteği olmasını sağlamak için
+// Token yenileme sırasında bekleyen isteklerin resolve/reject'lerini tutuyoruz
+type FailedRequest = {
+  resolve: (value?: unknown) => void
+  reject: (error?: unknown) => void
+}
+
 let isRefreshing = false
-let failedQueue: Array<{
-  resolve: (value: unknown) => void
-  reject: (reason?: any) => void
-}> = []
+let failedQueue: FailedRequest[] = []
 
 const processQueue = (error: AxiosError | null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
-      prom.reject(error)
+      reject(error)
     } else {
-      prom.resolve(undefined) // Token yenilendi, isteği tekrar denemesi için resolve et
+      resolve()
     }
   })
   failedQueue = []
@@ -26,37 +28,34 @@ const processQueue = (error: AxiosError | null) => {
 api.interceptors.response.use(
   response => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config
-    // _retry flag'ini kontrol etmeden önce originalRequest'in varlığından emin ol
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean }
+
     if (!originalRequest) {
       return Promise.reject(error)
     }
 
-    if (error.response?.status === 401 && !originalRequest.hasOwnProperty('_retry')) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // Zaten bir yenileme işlemi var, bu isteği kuyruğa al ve bekle
+        // Yenileme zaten yapılıyor, isteği kuyruğa al
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
-          .then(() => api(originalRequest)) // Yenileme bitince orijinal isteği tekrar dene
+          .then(() => api(originalRequest))
           .catch(err => Promise.reject(err))
       }
 
+      originalRequest._retry = true
       isRefreshing = true
 
       try {
-        // Refresh token ile yeni access token cookie olarak set edilir
+        // Refresh token ile access token yenileme isteği
         await api.post('/auth/refresh-token')
 
-        // Kuyruktaki bekleyen istekleri işle
         processQueue(null)
-        
-        // Orijinal isteği tekrar gönder
+
         return api(originalRequest)
       } catch (refreshError) {
-        // Yenileme başarısız olursa, kuyruktaki tüm istekleri reddet
         processQueue(refreshError as AxiosError)
-        // Kullanıcıyı login sayfasına yönlendirme gibi işlemler burada yapılabilir
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

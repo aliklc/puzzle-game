@@ -23,6 +23,7 @@ export default function SaveButton({
     solution,
     gridSize,
     difficulty,
+    onSuccess
 }: SaveButtonProps) {
     const [isPending, startTransition] = useTransition()
     const router = useRouter()
@@ -49,6 +50,7 @@ export default function SaveButton({
 
                 if (result.success) {
                     console.log('Başarıyla kaydedildi:', result.data)
+                    onSuccess?.()
                     router.refresh()
                 } else {
                     alert(result.error || 'Kayıt sırasında hata oluştu')

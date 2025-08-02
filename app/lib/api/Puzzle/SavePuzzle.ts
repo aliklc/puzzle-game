@@ -11,7 +11,7 @@ export async function savePuzzleAction(formData: FormData) {
             puzzle_hash: formData.get('puzzle_hash') as string,
         }
 
-        const { data } = await api.post('/puzzles', puzzleData)
+        const { data } = await api.post('/puzzles/', puzzleData)
         
         
         return { success: true, data }

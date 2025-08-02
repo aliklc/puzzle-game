@@ -22,6 +22,7 @@ export interface SaveButtonProps {
 	solution: Cell[][]
 	gridSize: number
 	difficulty: DifficultyLevel
+    onSuccess?: () => void 
 }
 
 
