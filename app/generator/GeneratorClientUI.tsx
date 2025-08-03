@@ -12,6 +12,7 @@ import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig
 import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
 import { fetchPuzzleSummariesClient } from '../lib/api/Puzzle/PuzzleSummaries'
 import type { Cell, Constraint, PuzzleSummary } from '../lib/types'
+import { fetchCurrentUser } from '../lib/api/auth/me'
 
 export default function GeneratorClientUI() {
     const [initialSummaries, setInitialSummaries] = useState<PuzzleSummary[]>([])
@@ -20,6 +21,7 @@ export default function GeneratorClientUI() {
     const [solution, setSolution] = useState<Cell[][]>([])
     const [gridSize, setGridSize] = useState<number>(6)
     const [difficulty, setDifficulty] = useState<DifficultyLevel>('Medium')
+    const [isAdmin, setIsAdmin] = useState<boolean>(false)
 
     const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
@@ -30,6 +32,17 @@ export default function GeneratorClientUI() {
 
     useEffect(() => {
         loadSummaries()
+    }, [])
+
+    async function loadUserRole() {
+        const user = await fetchCurrentUser()
+        if (user?.roles?.includes('admin')) {
+            setIsAdmin(true)
+        }
+    }
+
+    useEffect(() => {
+        loadUserRole()
     }, [])
 
     function handleGenerate() {
@@ -54,17 +67,15 @@ export default function GeneratorClientUI() {
                         setSolution(solution)
                     }}
                 />
-                <SizeSelector value={gridSize} onChange={setGridSize} />
-                <DifficultySelector value={difficulty} onChange={setDifficulty} />
-                <GenerateButton onClick={handleGenerate} />
-                <SaveButton
-                    puzzle={puzzle}
-                    constraints={constraints}
-                    solution={solution}
-                    gridSize={gridSize}
-                    difficulty={difficulty}
-                    onSuccess={loadSummaries}
-                />
+                {isAdmin && (
+                    <><SizeSelector value={gridSize} onChange={setGridSize} /><DifficultySelector value={difficulty} onChange={setDifficulty} /><GenerateButton onClick={handleGenerate} /><SaveButton
+                        puzzle={puzzle}
+                        constraints={constraints}
+                        solution={solution}
+                        gridSize={gridSize}
+                        difficulty={difficulty}
+                        onSuccess={loadSummaries} /></>
+                )}
             </div>
             <PuzzleGrid puzzle={puzzle} constraints={constraints} />
         </div>
