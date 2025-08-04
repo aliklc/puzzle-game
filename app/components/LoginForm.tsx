@@ -7,7 +7,12 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
-export default function LoginForm() {
+
+type LoginFormProps = {
+    onLoginSuccess?: () => void
+}
+
+export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
@@ -19,6 +24,7 @@ export default function LoginForm() {
         if (res.success) {
             setSuccess(true)
             setError('')
+            if (onLoginSuccess) onLoginSuccess()
         } else {
             setError(res.error || 'Bilinmeyen hata')
         }

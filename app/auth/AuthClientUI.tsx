@@ -5,8 +5,16 @@ import { Button } from '@/components/ui/button'
 import LoginForm from '../components/LoginForm'
 import RegisterForm from '../components/RegisterForm'
 
-export default function AuthClientUI() {
+type AuthClientUIProps = {
+    onAuthChange?: () => void
+}
+
+export default function AuthClientUI({ onAuthChange }: AuthClientUIProps) {
     const [mode, setMode] = useState<'login' | 'register'>('login')
+
+    const handleLoginSuccess = () => {
+        if (onAuthChange) onAuthChange();
+    }
 
     return (
         <div className="max-w-md mx-auto mt-10 p-6 rounded-2xl shadow-xl bg-white space-y-6">
@@ -24,7 +32,7 @@ export default function AuthClientUI() {
                     Kayıt Ol
                 </Button>
             </div>
-            <div>{mode === 'login' ? <LoginForm /> : <RegisterForm />}</div>
+            <div>{mode === 'login' ? <LoginForm onLoginSuccess={handleLoginSuccess} /> : <RegisterForm />}</div>
         </div>
     )
 }

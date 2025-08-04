@@ -2,6 +2,10 @@
 
 import AuthClientUI from './AuthClientUI'
 
-export default function AuthTab() {
-    return <AuthClientUI />
+type AuthTabProps = {
+    onAuthChange?: () => void
+}
+
+export default function AuthTab({ onAuthChange }: AuthTabProps) {
+    return <AuthClientUI onAuthChange={onAuthChange} />
 }
