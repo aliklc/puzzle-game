@@ -13,6 +13,9 @@ import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
 import { fetchPuzzleSummariesClient } from '../lib/api/Puzzle/PuzzleSummaries'
 import type { Cell, Constraint, PuzzleSummary } from '../lib/types'
 import { fetchCurrentUser } from '../lib/api/auth/me'
+import { logout } from '../lib/api/auth/logout'
+import { AxiosError } from 'axios';
+import { Button } from '@/components/ui/button'
 
 export default function GeneratorClientUI() {
     const [initialSummaries, setInitialSummaries] = useState<PuzzleSummary[]>([])
@@ -56,25 +59,53 @@ export default function GeneratorClientUI() {
         setSolution(solution)
     }
 
+
+    async function handleLogout() {
+        try {
+            await logout();
+
+        } catch (e: unknown) {
+            let message = 'Çıkış yapılamadı.';
+            if (e instanceof AxiosError) {
+                message = (e.response?.data as { message?: string })?.message || 'Çıkış yapılamadı.';
+            } else if (e instanceof Error) {
+                message = e.message;
+            }
+            alert(message);
+        }
+    }
+
     return (
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center space-y-4 relative w-full">
+            <div className="fixed top-4 right-4 z-50">
+                <Button variant="destructive" onClick={handleLogout}>
+                    Çıkış Yap
+                </Button>
+            </div>
             <div className="flex items-center space-x-4">
                 <PuzzleList
                     initialData={initialSummaries}
                     onSelect={(puzzle, constraints, solution) => {
-                        setPuzzle(puzzle)
-                        setConstraints(constraints)
-                        setSolution(solution)
+                        setPuzzle(puzzle);
+                        setConstraints(constraints);
+                        setSolution(solution);
                     }}
                 />
+                {/* Admin kontrolleri */}
                 {isAdmin && (
-                    <><SizeSelector value={gridSize} onChange={setGridSize} /><DifficultySelector value={difficulty} onChange={setDifficulty} /><GenerateButton onClick={handleGenerate} /><SaveButton
-                        puzzle={puzzle}
-                        constraints={constraints}
-                        solution={solution}
-                        gridSize={gridSize}
-                        difficulty={difficulty}
-                        onSuccess={loadSummaries} /></>
+                    <>
+                        <SizeSelector value={gridSize} onChange={setGridSize} />
+                        <DifficultySelector value={difficulty} onChange={setDifficulty} />
+                        <GenerateButton onClick={handleGenerate} />
+                        <SaveButton
+                            puzzle={puzzle}
+                            constraints={constraints}
+                            solution={solution}
+                            gridSize={gridSize}
+                            difficulty={difficulty}
+                            onSuccess={loadSummaries}
+                        />
+                    </>
                 )}
             </div>
             <PuzzleGrid puzzle={puzzle} constraints={constraints} />
