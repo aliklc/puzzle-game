@@ -7,7 +7,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
-import { difficultyConfigs, type DifficultyLevel } from '../../lib/difficultyConfig'
+import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig'
 
 interface DifficultySelectorProps {
 	value: DifficultyLevel

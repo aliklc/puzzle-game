@@ -34,6 +34,13 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // Network hataları için özel mesaj
+    if (!error.response) {
+      const networkError = new Error('Sunucuya bağlanılamıyor. İnternet bağlantınızı kontrol edin.')
+      networkError.name = 'NetworkError'
+      return Promise.reject(networkError)
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         // Yenileme zaten yapılıyor, isteği kuyruğa al
@@ -56,6 +63,12 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as AxiosError)
+        
+        // Refresh token da başarısız olursa login sayfasına yönlendir
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login'
+        }
+        
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

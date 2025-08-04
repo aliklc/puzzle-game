@@ -1,30 +1,105 @@
+
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import PuzzleList from '../components/PuzzleList'
+import PuzzleGrid from '../components/PuzzleGrid'
+
+
+import { fetchPuzzleSummariesClient } from '../lib/api/Puzzle/PuzzleSummaries'
+import type { Cell, Constraint, PuzzleSummary } from '../lib/types'
+import { logout } from '../lib/api/auth/logout'
+import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/button'
-import LoginForm from './components/LoginForm'
-import RegisterForm from './components/RegisterForm'
+import { fetchCurrentUser } from '../lib/api/auth/me'
 
 export default function GameClientUI() {
-    const [mode, setMode] = useState<'login' | 'register'>('login')
+    const [initialSummaries, setInitialSummaries] = useState<PuzzleSummary[]>([])
+    const [puzzle, setPuzzle] = useState<Cell[][]>([])
+    const [constraints, setConstraints] = useState<Constraint[]>([])
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [loadingError, setLoadingError] = useState<string | null>(null)
+    const [isUser, setIsUser] = useState<boolean | null>(null)
+
+    async function loadSummaries() {
+        try {
+            const data = await fetchPuzzleSummariesClient()
+            setInitialSummaries(data)
+        } catch (error) {
+            console.error('Puzzle listesi yüklenemedi:', error)
+            setLoadingError('Puzzle listesi yüklenemedi')
+        }
+    }
+
+    useEffect(() => {
+        loadSummaries()
+    }, [])
+
+
+    async function loadUserRole() {
+        try {
+            setIsLoading(true)
+            const user = await fetchCurrentUser()
+            setIsUser(user?.roles?.includes('user') ?? false)
+        } catch (error) {
+            console.error('Kullanıcı bilgisi yüklenemedi:', error)
+            setLoadingError('Kullanıcı bilgisi yüklenemedi')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        loadUserRole()
+    }, [])
+
+
+    async function handleLogout() {
+        try {
+            await logout();
+        } catch (e: unknown) {
+            let message = 'Çıkış yapılamadı.';
+            if (e instanceof AxiosError) {
+                message = (e.response?.data as { message?: string })?.message || 'Çıkış yapılamadı.';
+            } else if (e instanceof Error) {
+                message = e.message;
+            }
+            alert(message);
+        }
+    }
+
+    if (isUser === null || isLoading) {
+        return <div className="text-center text-gray-600">Yükleniyor...</div>;
+    }
+    if (!isUser) {
+        return null;
+    }
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 rounded-2xl shadow-xl bg-white space-y-6">
-            <div className="flex justify-center gap-4">
-                <Button
-                    variant={mode === 'login' ? 'default' : 'outline'}
-                    onClick={() => setMode('login')}
-                >
-                    Giriş Yap
-                </Button>
-                <Button
-                    variant={mode === 'register' ? 'default' : 'outline'}
-                    onClick={() => setMode('register')}
-                >
-                    Kayıt Ol
+        <div className="flex flex-col items-center space-y-4 relative w-full">
+            <div className="fixed top-4 right-4 z-50">
+                <Button variant="destructive" onClick={handleLogout}>
+                    Çıkış Yap
                 </Button>
             </div>
-            <div>{mode === 'login' ? <LoginForm /> : <RegisterForm />}</div>
+            
+            {loadingError && (
+                <div className="text-center text-red-600 bg-red-50 p-3 rounded-md">
+                    {loadingError}
+                </div>
+            )}
+            
+                    <div className="flex items-center space-x-4">
+                        <PuzzleList
+                            initialData={initialSummaries}
+                            onSelect={(puzzle, constraints) => {
+                                setPuzzle(puzzle);
+                                setConstraints(constraints);
+                            }}
+                        />
+
+                    </div>
+                    <PuzzleGrid puzzle={puzzle} constraints={constraints} />
         </div>
     )
 }

@@ -1,12 +1,13 @@
+
 'use client'
 
 import { useState, useEffect } from 'react'
-import PuzzleList from './components/PuzzleList'
-import SizeSelector from './components/SizeSelector'
-import DifficultySelector from './components/DifficultySelector'
-import GenerateButton from './components/GenerateButton'
-import PuzzleGrid from './components/PuzzleGrid'
-import SaveButton from './components/SaveButton'
+import PuzzleList from '../components/PuzzleList'
+import SizeSelector from '../components/SizeSelector'
+import DifficultySelector from '../components/DifficultySelector'
+import GenerateButton from '../components/GenerateButton'
+import PuzzleGrid from '../components/PuzzleGrid'
+import SaveButton from '../components/SaveButton'
 
 import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig'
 import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
@@ -24,13 +25,20 @@ export default function GeneratorClientUI() {
     const [solution, setSolution] = useState<Cell[][]>([])
     const [gridSize, setGridSize] = useState<number>(6)
     const [difficulty, setDifficulty] = useState<DifficultyLevel>('Medium')
-    const [isAdmin, setIsAdmin] = useState<boolean>(false)
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [loadingError, setLoadingError] = useState<string | null>(null)
 
     const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
     async function loadSummaries() {
-        const data = await fetchPuzzleSummariesClient()
-        setInitialSummaries(data)
+        try {
+            const data = await fetchPuzzleSummariesClient()
+            setInitialSummaries(data)
+        } catch (error) {
+            console.error('Puzzle listesi yüklenemedi:', error)
+            setLoadingError('Puzzle listesi yüklenemedi')
+        }
     }
 
     useEffect(() => {
@@ -38,9 +46,15 @@ export default function GeneratorClientUI() {
     }, [])
 
     async function loadUserRole() {
-        const user = await fetchCurrentUser()
-        if (user?.roles?.includes('admin')) {
-            setIsAdmin(true)
+        try {
+            setIsLoading(true)
+            const user = await fetchCurrentUser()
+            setIsAdmin(user?.roles?.includes('admin') ?? false)
+        } catch (error) {
+            console.error('Kullanıcı bilgisi yüklenemedi:', error)
+            setLoadingError('Kullanıcı bilgisi yüklenemedi')
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -75,6 +89,12 @@ export default function GeneratorClientUI() {
         }
     }
 
+    if (isAdmin === null || isLoading) {
+        return <div className="text-center text-gray-600">Yükleniyor...</div>;
+    }
+    if (!isAdmin) {
+        return null;
+    }
     return (
         <div className="flex flex-col items-center space-y-4 relative w-full">
             <div className="fixed top-4 right-4 z-50">
@@ -82,6 +102,11 @@ export default function GeneratorClientUI() {
                     Çıkış Yap
                 </Button>
             </div>
+            {loadingError && (
+                <div className="text-center text-red-600 bg-red-50 p-3 rounded-md">
+                    {loadingError}
+                </div>
+            )}
             <div className="flex items-center space-x-4">
                 <PuzzleList
                     initialData={initialSummaries}
@@ -91,22 +116,17 @@ export default function GeneratorClientUI() {
                         setSolution(solution);
                     }}
                 />
-                {/* Admin kontrolleri */}
-                {isAdmin && (
-                    <>
-                        <SizeSelector value={gridSize} onChange={setGridSize} />
-                        <DifficultySelector value={difficulty} onChange={setDifficulty} />
-                        <GenerateButton onClick={handleGenerate} />
-                        <SaveButton
-                            puzzle={puzzle}
-                            constraints={constraints}
-                            solution={solution}
-                            gridSize={gridSize}
-                            difficulty={difficulty}
-                            onSuccess={loadSummaries}
-                        />
-                    </>
-                )}
+                <SizeSelector value={gridSize} onChange={setGridSize} />
+                <DifficultySelector value={difficulty} onChange={setDifficulty} />
+                <GenerateButton onClick={handleGenerate} />
+                <SaveButton
+                    puzzle={puzzle}
+                    constraints={constraints}
+                    solution={solution}
+                    gridSize={gridSize}
+                    difficulty={difficulty}
+                    onSuccess={loadSummaries}
+                />
             </div>
             <PuzzleGrid puzzle={puzzle} constraints={constraints} />
         </div>

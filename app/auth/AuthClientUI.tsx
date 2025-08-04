@@ -1,0 +1,30 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import LoginForm from '../components/LoginForm'
+import RegisterForm from '../components/RegisterForm'
+
+export default function AuthClientUI() {
+    const [mode, setMode] = useState<'login' | 'register'>('login')
+
+    return (
+        <div className="max-w-md mx-auto mt-10 p-6 rounded-2xl shadow-xl bg-white space-y-6">
+            <div className="flex justify-center gap-4">
+                <Button
+                    variant={mode === 'login' ? 'default' : 'outline'}
+                    onClick={() => setMode('login')}
+                >
+                    Giriş Yap
+                </Button>
+                <Button
+                    variant={mode === 'register' ? 'default' : 'outline'}
+                    onClick={() => setMode('register')}
+                >
+                    Kayıt Ol
+                </Button>
+            </div>
+            <div>{mode === 'login' ? <LoginForm /> : <RegisterForm />}</div>
+        </div>
+    )
+}
