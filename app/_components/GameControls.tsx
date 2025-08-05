@@ -8,13 +8,15 @@ interface GameControlsProps {
     selectedGameId: number | null
     onStartGame: () => void
     onFinishGame: () => void
+    onResetPuzzle: () => void
 }
 
 export default function GameControls({ 
     isGameStarted, 
     timer, 
     onStartGame, 
-    onFinishGame
+    onFinishGame,
+    onResetPuzzle
 }: GameControlsProps) {
     return (
         <div className="flex items-center space-x-4">
@@ -31,6 +33,9 @@ export default function GameControls({
                     <div className="text-2xl font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">
                         ⏱️ {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
                     </div>
+                    <Button onClick={onResetPuzzle} variant="outline" size="lg">
+                        🔄 Sıfırla
+                    </Button>
                     <Button onClick={onFinishGame} variant="destructive" size="lg">
                         ✅ Oyunu Bitir
                     </Button>

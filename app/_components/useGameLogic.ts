@@ -10,9 +10,10 @@ interface UseGameLogicProps {
     puzzle: Cell[][]
     solution: Cell[][]
     selectedGameId: number | null
+    onResetPuzzle?: () => void
 }
 
-export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGameLogicProps) {
+export default function useGameLogic({ puzzle, solution, selectedGameId, onResetPuzzle }: UseGameLogicProps) {
     const [timer, setTimer] = useState<number>(0)
     const [isGameStarted, setIsGameStarted] = useState<boolean>(false)
     const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
@@ -20,6 +21,7 @@ export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGa
     const [gameInstance, setGameInstance] = useState<GameInstanceResponse | null>(null)
     const [attempts, setAttempts] = useState<number>(0)
     const [userSolution, setUserSolution] = useState<Cell[][]>([])
+    const [completedTime, setCompletedTime] = useState<number | null>(null)
 
     // Cleanup effect
     useEffect(() => {
@@ -37,6 +39,7 @@ export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGa
         setGameInstance(null)
         setAttempts(0)
         setUserSolution([])
+        setCompletedTime(null)
         if (intervalId) {
             clearInterval(intervalId)
             setIntervalId(null)
@@ -86,6 +89,14 @@ export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGa
         }
     }
 
+    function resetPuzzle() {
+        // Parent component'teki puzzle state'ini resetle
+        onResetPuzzle?.()
+        // User solution'ı da başlangıç haline döndür
+        const resetUserSolution = puzzle.map(row => [...row])
+        setUserSolution(resetUserSolution)
+    }
+
     async function finishGame() {
         if (!gameInstance) {
             alert('Oyun instance bulunamadı!')
@@ -107,6 +118,7 @@ export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGa
             if (result.status === 'completed') {
                 stopGame() // Sadece başarılı olduğunda oyunu durdur
                 setScore(result.score)
+                setCompletedTime(timer)
                 alert(`Tebrikler! Oyunu başarıyla tamamladınız! 🎉\nPuanınız: ${result.score}`)
             } else {
                 // Başarısız olduğunda önce backend'e güncel attempts'i gönder
@@ -152,12 +164,13 @@ export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGa
         gameInstance,
         attempts,
         userSolution,
-        
+        completedTime,
         // Functions
         resetGameState,
         startGame,
         stopGame,
         finishGame,
+        resetPuzzle,
         setUserSolution
     }
 }

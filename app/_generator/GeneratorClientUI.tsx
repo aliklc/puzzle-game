@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 export default function GeneratorClientUI() {
     const [initialSummaries, setInitialSummaries] = useState<GameResponse[]>([])
     const [puzzle, setPuzzle] = useState<Cell[][]>([])
+    const [originalPuzzle, setOriginalPuzzle] = useState<Cell[][]>([])
     const [constraints, setConstraints] = useState<Constraint[]>([])
     const [solution, setSolution] = useState<Cell[][]>([])
     const [gridSize, setGridSize] = useState<number>(6)
@@ -37,7 +38,10 @@ export default function GeneratorClientUI() {
     const gameLogic = useGameLogic({ 
         puzzle, 
         solution, 
-        selectedGameId
+        selectedGameId,
+        onResetPuzzle: () => {
+            setPuzzle(originalPuzzle.map(row => [...row]))
+        }
     })
 
     const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
@@ -80,6 +84,7 @@ export default function GeneratorClientUI() {
             constraintRatio
         )
         setPuzzle(puzzle)
+        setOriginalPuzzle(puzzle.map(row => [...row]))
         setConstraints(constraints)
         setSolution(solution)
         
@@ -129,6 +134,7 @@ export default function GeneratorClientUI() {
                     selectedGameId={selectedGameId}
                     onSelect={(puzzle, constraints, solution, gameId) => {
                         setPuzzle(puzzle);
+                        setOriginalPuzzle(puzzle.map(row => [...row]));
                         setConstraints(constraints);
                         setSolution(solution ?? []);
                         setSelectedGameId(gameId);
@@ -160,11 +166,13 @@ export default function GeneratorClientUI() {
                         selectedGameId={selectedGameId}
                         onStartGame={gameLogic.startGame}
                         onFinishGame={gameLogic.finishGame}
+                        onResetPuzzle={gameLogic.resetPuzzle}
                     />
                     
                     <GameStats
                         attempts={gameLogic.attempts}
                         score={gameLogic.score}
+                        completedTime={gameLogic.completedTime}
                     />
                 </div>
             )}

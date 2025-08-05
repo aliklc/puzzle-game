@@ -18,6 +18,7 @@ import { fetchCurrentUser } from '../lib/api/auth/me'
 export default function GameClientUI() {
     const [initialSummaries, setInitialSummaries] = useState<GameResponse[]>([])
     const [puzzle, setPuzzle] = useState<Cell[][]>([])
+    const [originalPuzzle, setOriginalPuzzle] = useState<Cell[][]>([])
     const [constraints, setConstraints] = useState<Constraint[]>([])
     const [solution, setSolution] = useState<Cell[][]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -29,7 +30,10 @@ export default function GameClientUI() {
     const gameLogic = useGameLogic({ 
         puzzle, 
         solution, 
-        selectedGameId
+        selectedGameId,
+        onResetPuzzle: () => {
+            setPuzzle(originalPuzzle.map(row => [...row]))
+        }
     })
 
     async function loadSummaries() {
@@ -113,6 +117,7 @@ export default function GameClientUI() {
                     selectedGameId={selectedGameId}
                     onSelect={(puzzle, constraints, solution, gameId) => {
                         setPuzzle(puzzle);
+                        setOriginalPuzzle(puzzle.map(row => [...row]));
                         setConstraints(constraints);
                         setSolution(solution ?? []);
                         setSelectedGameId(gameId);
@@ -130,11 +135,13 @@ export default function GameClientUI() {
                         selectedGameId={selectedGameId}
                         onStartGame={gameLogic.startGame}
                         onFinishGame={gameLogic.finishGame}
+                        onResetPuzzle={gameLogic.resetPuzzle}
                     />
                     
                     <GameStats
                         attempts={gameLogic.attempts}
                         score={gameLogic.score}
+                        completedTime={gameLogic.completedTime}
                     />
                 </div>
             )}
