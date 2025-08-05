@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -8,18 +7,22 @@ import DifficultySelector from '../_components/DifficultySelector'
 import GenerateButton from '../_components/GenerateButton'
 import PuzzleGrid from '../_components/PuzzleGrid'
 import SaveButton from '../_components/SaveButton'
+import GameControls from '../_components/GameControls'
+import GameStats from '../_components/GameStats'
+import GameWarning from '../_components/GameWarning'
+import useGameLogic from '../_components/useGameLogic'
 
 import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig'
 import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'
-import { fetchPuzzleSummariesClient } from '../lib/api/Puzzle/PuzzleSummaries'
-import type { Cell, Constraint, PuzzleSummary } from '../lib/types'
+import { listGames } from '../lib/api/Game/listGames'
+import type { Cell, Constraint, GameResponse } from '../lib/types'
 import { fetchCurrentUser } from '../lib/api/auth/me'
 import { logout } from '../lib/api/auth/logout'
 import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/button'
 
 export default function GeneratorClientUI() {
-    const [initialSummaries, setInitialSummaries] = useState<PuzzleSummary[]>([])
+    const [initialSummaries, setInitialSummaries] = useState<GameResponse[]>([])
     const [puzzle, setPuzzle] = useState<Cell[][]>([])
     const [constraints, setConstraints] = useState<Constraint[]>([])
     const [solution, setSolution] = useState<Cell[][]>([])
@@ -28,16 +31,25 @@ export default function GeneratorClientUI() {
     const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [loadingError, setLoadingError] = useState<string | null>(null)
+    const [selectedGameId, setSelectedGameId] = useState<number | null>(null)
+
+    // Game logic hook
+    const gameLogic = useGameLogic({ 
+        puzzle, 
+        solution, 
+        selectedGameId,
+        onGameComplete: () => setSelectedGameId(null)
+    })
 
     const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]
 
     async function loadSummaries() {
         try {
-            const data = await fetchPuzzleSummariesClient()
+            const data = await listGames()
             setInitialSummaries(data)
         } catch (error) {
-            console.error('Puzzle listesi yüklenemedi:', error)
-            setLoadingError('Puzzle listesi yüklenemedi')
+            console.error('Oyun listesi yüklenemedi:', error)
+            setLoadingError('Oyun listesi yüklenemedi')
         }
     }
 
@@ -71,13 +83,17 @@ export default function GeneratorClientUI() {
         setPuzzle(puzzle)
         setConstraints(constraints)
         setSolution(solution)
+        
+        // Yeni puzzle oluşturulduğunda selectedGameId'yi null yap
+        setSelectedGameId(null)
+        
+        // Oyun state'lerini sıfırla
+        gameLogic.resetGameState()
     }
-
 
     async function handleLogout() {
         try {
             await logout();
-
         } catch (e: unknown) {
             let message = 'Çıkış yapılamadı.';
             if (e instanceof AxiosError) {
@@ -95,6 +111,7 @@ export default function GeneratorClientUI() {
     if (!isAdmin) {
         return null;
     }
+    
     return (
         <div className="flex flex-col items-center space-y-4 relative w-full">
             <div className="fixed top-4 right-4 z-50">
@@ -110,10 +127,13 @@ export default function GeneratorClientUI() {
             <div className="flex items-center space-x-4">
                 <PuzzleList
                     initialData={initialSummaries}
-                    onSelect={(puzzle, constraints, solution) => {
+                    selectedGameId={selectedGameId}
+                    onSelect={(puzzle, constraints, solution, gameId) => {
                         setPuzzle(puzzle);
                         setConstraints(constraints);
-                        setSolution(solution);
+                        setSolution(solution ?? []);
+                        setSelectedGameId(gameId);
+                        gameLogic.resetGameState();
                     }}
                 />
                 <SizeSelector value={gridSize} onChange={setGridSize} />
@@ -126,9 +146,35 @@ export default function GeneratorClientUI() {
                     gridSize={gridSize}
                     difficulty={difficulty}
                     onSuccess={loadSummaries}
+                    onSave={(gameId) => setSelectedGameId(gameId)}
                 />
             </div>
-            <PuzzleGrid puzzle={puzzle} constraints={constraints} />
+            
+            {/* Timer ve Oyun Kontrolleri */}
+            {puzzle.length > 0 && (
+                <div className="flex flex-col items-center space-y-4">
+                    <GameWarning selectedGameId={selectedGameId} />
+                    
+                    <GameControls
+                        isGameStarted={gameLogic.isGameStarted}
+                        timer={gameLogic.timer}
+                        selectedGameId={selectedGameId}
+                        onStartGame={gameLogic.startGame}
+                        onFinishGame={gameLogic.finishGame}
+                    />
+                    
+                    <GameStats
+                        attempts={gameLogic.attempts}
+                        score={gameLogic.score}
+                    />
+                </div>
+            )}
+            
+            <PuzzleGrid 
+                puzzle={puzzle} 
+                constraints={constraints} 
+                onGridChange={gameLogic.setUserSolution}
+            />
         </div>
     )
 }

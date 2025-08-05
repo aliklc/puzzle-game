@@ -4,7 +4,7 @@
 import React, { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import type { SaveButtonProps } from '@/app/lib/types'
-import { savePuzzleAction } from '@/app/lib/api/Puzzle/SavePuzzle'
+import { createGame } from '@/app/lib/api/Game/createGame'
 import { useRouter } from 'next/navigation'
 
 function generateHash(obj: unknown): string {
@@ -23,7 +23,8 @@ export default function SaveButton({
     solution,
     gridSize,
     difficulty,
-    onSuccess
+    onSuccess,
+    onSave
 }: SaveButtonProps) {
     const [isPending, startTransition] = useTransition()
     const router = useRouter()
@@ -35,25 +36,30 @@ export default function SaveButton({
         }
 
         const puzzleHash = generateHash(puzzle)
-        const title = `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`
-
+        const name = `Puzzle ${gridSize}x${gridSize} - ${difficulty} - ${puzzleHash}`
         startTransition(async () => {
             try {
-                const formData = new FormData()
-                formData.append('title', title)
-                formData.append('puzzle_data', JSON.stringify(puzzle))
-                formData.append('constraints', JSON.stringify(constraints))
-                formData.append('solution_data', JSON.stringify(solution))
-                formData.append('puzzle_hash', puzzleHash)
-
-                const result = await savePuzzleAction(formData)
-
-                if (result.success) {
-                    console.log('Başarıyla kaydedildi:', result.data)
+                const gameData = {
+                    name,
+                    type: 'fruit', // veya oyun tipiniz neyse
+                    description: `Otomatik oluşturulan puzzle (${difficulty})`,
+                    data: {
+                        puzzle_data: puzzle,
+                        constraints,
+                        solution_data: solution,
+                        gridSize,
+                        difficulty
+                    },
+                    game_hash: puzzleHash
+                }
+                const result = await createGame(gameData)
+                if (result) {
+                    console.log('Başarıyla kaydedildi:', result)
                     onSuccess?.()
+                    onSave?.(result.id) // Kaydedilen game ID'sini parent'a gönder
                     router.refresh()
                 } else {
-                    alert(result.error || 'Kayıt sırasında hata oluştu')
+                    alert('Kayıt sırasında hata oluştu')
                 }
             } catch (error) {
                 alert('Kayıt isteği başarısız: ' + (error as Error).message)

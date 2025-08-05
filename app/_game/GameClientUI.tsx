@@ -4,30 +4,42 @@
 import { useState, useEffect } from 'react'
 import PuzzleList from '../_components/PuzzleList'
 import PuzzleGrid from '../_components/PuzzleGrid'
+import GameControls from '../_components/GameControls'
+import GameStats from '../_components/GameStats'
+import useGameLogic from '../_components/useGameLogic'
 
-
-import { fetchPuzzleSummariesClient } from '../lib/api/Puzzle/PuzzleSummaries'
-import type { Cell, Constraint, PuzzleSummary } from '../lib/types'
+import { listGames } from '../lib/api/Game/listGames'
+import type { Cell, Constraint, GameResponse } from '../lib/types'
 import { logout } from '../lib/api/auth/logout'
 import { AxiosError } from 'axios';
 import { Button } from '@/components/ui/button'
 import { fetchCurrentUser } from '../lib/api/auth/me'
 
 export default function GameClientUI() {
-    const [initialSummaries, setInitialSummaries] = useState<PuzzleSummary[]>([])
+    const [initialSummaries, setInitialSummaries] = useState<GameResponse[]>([])
     const [puzzle, setPuzzle] = useState<Cell[][]>([])
     const [constraints, setConstraints] = useState<Constraint[]>([])
+    const [solution, setSolution] = useState<Cell[][]>([])
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [loadingError, setLoadingError] = useState<string | null>(null)
     const [isUser, setIsUser] = useState<boolean | null>(null)
+    const [selectedGameId, setSelectedGameId] = useState<number | null>(null)
+
+    // Game logic hook
+    const gameLogic = useGameLogic({ 
+        puzzle, 
+        solution, 
+        selectedGameId,
+        onGameComplete: () => setSelectedGameId(null)
+    })
 
     async function loadSummaries() {
         try {
-            const data = await fetchPuzzleSummariesClient()
+            const data = await listGames()
             setInitialSummaries(data)
         } catch (error) {
-            console.error('Puzzle listesi yüklenemedi:', error)
-            setLoadingError('Puzzle listesi yüklenemedi')
+            console.error('Oyun listesi yüklenemedi:', error)
+            setLoadingError('Oyun listesi yüklenemedi')
         }
     }
 
@@ -40,10 +52,12 @@ export default function GameClientUI() {
         try {
             setIsLoading(true)
             const user = await fetchCurrentUser()
-            setIsUser(user?.roles?.includes('user') ?? false)
+            // Normal kullanıcılar için sadece giriş yapmış olması yeterli
+            setIsUser(!!user) // user varsa true, yoksa false
         } catch (error) {
             console.error('Kullanıcı bilgisi yüklenemedi:', error)
-            setLoadingError('Kullanıcı bilgisi yüklenemedi')
+            setLoadingError('Lütfen giriş yapın')
+            setIsUser(false)
         } finally {
             setIsLoading(false)
         }
@@ -72,7 +86,12 @@ export default function GameClientUI() {
         return <div className="text-center text-gray-600">Yükleniyor...</div>;
     }
     if (!isUser) {
-        return null;
+        return (
+            <div className="text-center text-red-600">
+                <p>Bu sayfayı görüntülemek için giriş yapmanız gerekiyor.</p>
+                <p>Lütfen giriş yapın.</p>
+            </div>
+        );
     }
 
     return (
@@ -89,17 +108,43 @@ export default function GameClientUI() {
                 </div>
             )}
             
-                    <div className="flex items-center space-x-4">
-                        <PuzzleList
-                            initialData={initialSummaries}
-                            onSelect={(puzzle, constraints) => {
-                                setPuzzle(puzzle);
-                                setConstraints(constraints);
-                            }}
-                        />
+            <div className="flex items-center space-x-4">
+                <PuzzleList
+                    initialData={initialSummaries}
+                    selectedGameId={selectedGameId}
+                    onSelect={(puzzle, constraints, solution, gameId) => {
+                        setPuzzle(puzzle);
+                        setConstraints(constraints);
+                        setSolution(solution ?? []);
+                        setSelectedGameId(gameId);
+                        gameLogic.resetGameState();
+                    }}
+                />
+            </div>
 
-                    </div>
-                    <PuzzleGrid puzzle={puzzle} constraints={constraints} />
+            {/* Oyun Kontrolleri */}
+            {puzzle.length > 0 && (
+                <div className="flex flex-col items-center space-y-4">
+                    <GameControls
+                        isGameStarted={gameLogic.isGameStarted}
+                        timer={gameLogic.timer}
+                        selectedGameId={selectedGameId}
+                        onStartGame={gameLogic.startGame}
+                        onFinishGame={gameLogic.finishGame}
+                    />
+                    
+                    <GameStats
+                        attempts={gameLogic.attempts}
+                        score={gameLogic.score}
+                    />
+                </div>
+            )}
+            
+            <PuzzleGrid 
+                puzzle={puzzle} 
+                constraints={constraints} 
+                onGridChange={gameLogic.setUserSolution}
+            />
         </div>
     )
 }

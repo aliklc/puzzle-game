@@ -7,9 +7,10 @@ import ClickableCell from './ClickableCell'
 interface PuzzleGridProps {
 	puzzle: Cell[][]
 	constraints: Constraint[]
+	onGridChange?: (grid: Cell[][]) => void
 }
 
-export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
+export default function PuzzleGrid({ puzzle, constraints, onGridChange }: PuzzleGridProps) {
 	const size = puzzle.length
 	const [currentGrid, setCurrentGrid] = useState<Cell[][]>([])
 
@@ -26,6 +27,9 @@ export default function PuzzleGrid({ puzzle, constraints }: PuzzleGridProps) {
 		updated[r] = [...updated[r]]
 		updated[r][c] = next
 		setCurrentGrid(updated)
+		
+		// Parent component'e değişikliği bildir
+		onGridChange?.(updated)
 	}
 
 	// Constraint'leri kolay erişim için map'e koy

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import {
     Select,
     SelectContent,
@@ -8,12 +8,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import type { PuzzleListProps } from '@/app/lib/types'
-import { fetchPuzzleDetailClient } from '@/app/lib/api/Puzzle/PuzzleDetail'
+import type { GameResponse, Cell, Constraint } from '@/app/lib/types'
+import { getGameDetail } from '@/app/lib/api/Game/getGameDetail'
 
-export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
+type Props = {
+    initialData: GameResponse[];
+    onSelect: (puzzle: Cell[][], constraints: Constraint[], solution: Cell[][] | undefined, gameId: number) => void;
+    selectedGameId?: number | null;
+};
+
+export default function PuzzleList({ initialData, onSelect, selectedGameId }: Props) {
     const [selectedId, setSelectedId] = useState('')
     const [isPending, startTransition] = useTransition()
+
+    // selectedGameId prop'una göre selectedId'yi güncelle
+    useEffect(() => {
+        setSelectedId(selectedGameId ? selectedGameId.toString() : '')
+    }, [selectedGameId])
 
     function handleValueChange(id: string) {
         if (!id || id === 'empty') return
@@ -21,16 +32,21 @@ export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
         setSelectedId(id)
 
         startTransition(async () => {
-            const result = await fetchPuzzleDetailClient(id)
-
-            if (result.success && result.data) {
-                onSelect(
-                    result.data.puzzle_data,
-                    result.data.constraints,
-                    result.data.solution_data
-                )
-            } else {
-                alert(result.error || 'Bulmaca detayı yüklenemedi.')
+            try {
+                const data = await getGameDetail(Number(id))
+                if (data && data.data) {
+                    // data.data: { puzzle_data, constraints, solution_data, ... }
+                    onSelect(
+                        data.data.puzzle_data,
+                        data.data.constraints,
+                        data.data.solution_data,
+                        Number(id)
+                    )
+                } else {
+                    alert('Oyun detayı yüklenemedi.')
+                }
+            } catch {
+                alert('Oyun detayı yüklenemedi.')
             }
         })
     }
@@ -46,9 +62,9 @@ export default function PuzzleList({ initialData, onSelect }: PuzzleListProps) {
                         Hiç bulmaca yok
                     </SelectItem>
                 ) : (
-                    initialData.map((puzzle) => (
-                        <SelectItem key={puzzle.id} value={puzzle.id.toString()}>
-                            {puzzle.title || 'İsimsiz Bulmaca'}
+                    initialData.map((game) => (
+                        <SelectItem key={game.id} value={game.id.toString()}>
+                            {game.name || 'İsimsiz Oyun'}
                         </SelectItem>
                     ))
                 )}
