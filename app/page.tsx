@@ -1,14 +1,13 @@
 'use client'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import AuthTab from './auth/AuthTab'
-import GeneratorTab from './generator/GeneratorTab'
-import GameTab from './game/GameTab'
+import AuthTab from './_auth/AuthTab'
+import GeneratorTab from './_generator/GeneratorTab'
+import GameTab from './_game/GameTab'
 import { useEffect, useState } from 'react'
 import { fetchCurrentUser } from './lib/api/auth/me'
 
 export default function Page() {
    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-   const [loading, setLoading] = useState(true);
 
    const checkUser = async () => {
 	   try {
@@ -16,9 +15,7 @@ export default function Page() {
 		   setIsAdmin(user?.roles?.includes('admin') ?? false);
 	   } catch {
 		   setIsAdmin(false);
-	   } finally {
-		   setLoading(false);
-	   }
+	   } 
    };
 
    useEffect(() => {
@@ -26,13 +23,9 @@ export default function Page() {
    }, []);
 
    const handleAuthChange = () => {
-	   setLoading(true);
 	   checkUser();
    };
 
-   if (loading) {
-	   return <div className="text-center text-gray-600">Yükleniyor...</div>;
-   }
 
    return (
 	   <main className="p-4">

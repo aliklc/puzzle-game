@@ -2,8 +2,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import PuzzleList from '../components/PuzzleList'
-import PuzzleGrid from '../components/PuzzleGrid'
+import PuzzleList from '../_components/PuzzleList'
+import PuzzleGrid from '../_components/PuzzleGrid'
 
 
 import { fetchPuzzleSummariesClient } from '../lib/api/Puzzle/PuzzleSummaries'

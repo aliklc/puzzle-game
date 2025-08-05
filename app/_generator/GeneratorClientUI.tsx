@@ -2,12 +2,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import PuzzleList from '../components/PuzzleList'
-import SizeSelector from '../components/SizeSelector'
-import DifficultySelector from '../components/DifficultySelector'
-import GenerateButton from '../components/GenerateButton'
-import PuzzleGrid from '../components/PuzzleGrid'
-import SaveButton from '../components/SaveButton'
+import PuzzleList from '../_components/PuzzleList'
+import SizeSelector from '../_components/SizeSelector'
+import DifficultySelector from '../_components/DifficultySelector'
+import GenerateButton from '../_components/GenerateButton'
+import PuzzleGrid from '../_components/PuzzleGrid'
+import SaveButton from '../_components/SaveButton'
 
 import { difficultyConfigs, type DifficultyLevel } from '../lib/difficultyConfig'
 import { generatePlayablePuzzle } from '../lib/generator/generatePlayablePuzzle'

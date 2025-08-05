@@ -14,12 +14,12 @@ type FailedRequest = {
 let isRefreshing = false
 let failedQueue: FailedRequest[] = []
 
-const processQueue = (error: AxiosError | null) => {
+const processQueue = (error: AxiosError | null, token?: string) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error)
     } else {
-      resolve()
+      resolve(token)
     }
   })
   failedQueue = []
@@ -41,13 +41,25 @@ api.interceptors.response.use(
       return Promise.reject(networkError)
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 401 veya 403 hatalarında token refresh dene
+    const shouldRefresh = (error.response?.status === 401 || error.response?.status === 403) && 
+      !originalRequest._retry
+
+    if (shouldRefresh) {
+
+      
       if (isRefreshing) {
         // Yenileme zaten yapılıyor, isteği kuyruğa al
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
         })
-          .then(() => api(originalRequest))
+          .then((token) => {
+            // Token ile Authorization header'ını güncelle
+            if (token && originalRequest.headers) {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`
+            }
+            return api(originalRequest)
+          })
           .catch(err => Promise.reject(err))
       }
 
@@ -56,19 +68,22 @@ api.interceptors.response.use(
 
       try {
         // Refresh token ile access token yenileme isteği
-        await api.post('/auth/refresh-token')
+        const refreshResponse = await api.post('/auth/refresh-token')
+        
+        // Backend'den dönen yeni access token'ı al
+        const newAccessToken = refreshResponse.data.access_token
+        
 
-        processQueue(null)
+        // Orijinal isteğe Authorization header'ını ekle
+        if (newAccessToken && originalRequest.headers) {
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
+        }
+
+        processQueue(null, newAccessToken)
 
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as AxiosError)
-        
-        // Refresh token da başarısız olursa login sayfasına yönlendir
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login'
-        }
-        
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

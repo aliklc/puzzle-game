@@ -13,7 +13,6 @@ export async function savePuzzleAction(formData: FormData) {
 
         const { data } = await api.post('/puzzles/', puzzleData)
         
-        
         return { success: true, data }
     } catch (error) {
         console.error('Server-side POST error:', error)

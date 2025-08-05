@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import LoginForm from '../components/LoginForm'
-import RegisterForm from '../components/RegisterForm'
+import LoginForm from '../_components/LoginForm'
+import RegisterForm from '../_components/RegisterForm'
 
 type AuthClientUIProps = {
     onAuthChange?: () => void
