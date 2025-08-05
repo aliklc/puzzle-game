@@ -13,7 +13,6 @@ interface GameControlsProps {
 export default function GameControls({ 
     isGameStarted, 
     timer, 
-    selectedGameId, 
     onStartGame, 
     onFinishGame
 }: GameControlsProps) {
@@ -24,7 +23,6 @@ export default function GameControls({
                     onClick={onStartGame} 
                     variant="default" 
                     size="lg"
-                    disabled={!selectedGameId}
                 >
                     🎮 Oyunu Başlat
                 </Button>

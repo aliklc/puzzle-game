@@ -10,10 +10,9 @@ interface UseGameLogicProps {
     puzzle: Cell[][]
     solution: Cell[][]
     selectedGameId: number | null
-    onGameComplete?: () => void
 }
 
-export default function useGameLogic({ puzzle, solution, selectedGameId, onGameComplete }: UseGameLogicProps) {
+export default function useGameLogic({ puzzle, solution, selectedGameId }: UseGameLogicProps) {
     const [timer, setTimer] = useState<number>(0)
     const [isGameStarted, setIsGameStarted] = useState<boolean>(false)
     const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null)
@@ -109,8 +108,6 @@ export default function useGameLogic({ puzzle, solution, selectedGameId, onGameC
                 stopGame() // Sadece başarılı olduğunda oyunu durdur
                 setScore(result.score)
                 alert(`Tebrikler! Oyunu başarıyla tamamladınız! 🎉\nPuanınız: ${result.score}`)
-                // Oyun tamamlandığında callback çağır
-                onGameComplete?.()
             } else {
                 // Başarısız olduğunda önce backend'e güncel attempts'i gönder
                 const newAttempts = attempts + 1

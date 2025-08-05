@@ -29,8 +29,7 @@ export default function GameClientUI() {
     const gameLogic = useGameLogic({ 
         puzzle, 
         solution, 
-        selectedGameId,
-        onGameComplete: () => setSelectedGameId(null)
+        selectedGameId
     })
 
     async function loadSummaries() {

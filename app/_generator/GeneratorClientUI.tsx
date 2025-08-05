@@ -37,8 +37,7 @@ export default function GeneratorClientUI() {
     const gameLogic = useGameLogic({ 
         puzzle, 
         solution, 
-        selectedGameId,
-        onGameComplete: () => setSelectedGameId(null)
+        selectedGameId
     })
 
     const { blankRatio, constraintRatio } = difficultyConfigs[difficulty]

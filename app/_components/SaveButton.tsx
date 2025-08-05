@@ -41,7 +41,7 @@ export default function SaveButton({
             try {
                 const gameData = {
                     name,
-                    type: 'fruit', // veya oyun tipiniz neyse
+                    type: 'puzzle', // veya oyun tipiniz neyse
                     description: `Otomatik oluşturulan puzzle (${difficulty})`,
                     data: {
                         puzzle_data: puzzle,
