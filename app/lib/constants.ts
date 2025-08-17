@@ -1,3 +1,3 @@
-export type Fruit = 'lemon' | 'blueberry' | null
+import { Fruit } from './types'
 
-export const fruits: Fruit[] = ['lemon', 'blueberry', null]
+export const FRUITS: Fruit[] = ['🫐', '🍋']
